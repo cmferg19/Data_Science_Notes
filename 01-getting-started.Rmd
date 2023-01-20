@@ -1,0 +1,105 @@
+---
+title: "Getting Started in R"
+author: "Spring 2023"
+output: html_document
+---
+
+# Getting Started with `R` and `R Studio`
+
+__Goals__:
+
+1. Use `R Studio` on the server
+
+2. Use `R Markdown` and code chunks
+
+3. Load in data to `R Studio`
+
+4. Run code and change a few things within that code
+
+
+## Intro to `R` and `R Studio`
+
+A. Open `R Studio` on the SLU `R Studio` server at
+<a href="http://rstudio.stlawu.local:8787" target="_blank">http://rstudio.stlawu.local:8787</a> and create a folder called STAT_234 or some other meaningful title to you. 
+
+Note that you must be on campus to use the `R Studio` server, unless you use a VPN. Directions on how to set-up VPN are
+<a href="https://infotech.stlawu.edu/support/content/11269" target="_blank">https://infotech.stlawu.edu/support/content/11269 </a>
+for Macs and <a href="https://stlawu.teamdynamix.com/TDClient/1805/Portal/KB/ArticleDet?ID=55118" target="_blank">https://stlawu.teamdynamix.com/TDClient/1805/Portal/KB/ArticleDet?ID=55118 </a> for Windows.
+
+
+B. Next, create a subfolder within your STAT_234 folder. Title it _notes_ (or whatever you want really). Tip: Try to not include spaces in the folder name, doing so can occasionally cause some annoying errors to occur.
+
+C. Then, create an `R Project` by Clicking File -> New Project -> Existing  Directory,  navigate to the _notes_ folder, and click _Create Project_. 
+
+Within this folder, click the _New Folder_ button in your bottom-left window and name a new folder _data_ (for consistency, I recommend keeping it as all lowercase). Then, upload the data.zip file (located on the T drive) to the server by clicking "Upload" in the bottom right panel. In the dialog box that appears, you can click "Choose File" and navigate to the folder where the zip file is located. The zip file will automatically expand once uploaded. It includes a few of the data sets that we will use throughout the course. (We'll be adding more to this throughout the semester.)
+
+Finally, if we want to create a new `R Markdown` file we can do so by clicking File -> New File -> `R Markdown`. You can give your new `R Markdown` file a title if you want, and then click okay.
+
+Before moving on, click the **Knit** button in the top-left window at the top of the menu bar (look for the knitting needle icon). Name this file _01-getting-started.Rmd_ Make sure that the file knits to a pretty-looking .html file. The newly knitted .html file can now be found in your folder with your `R` project.
+
+## What are `R`, `R Studio`, and `R Markdown`?
+
+The distinction between the 3 will become more clear later on. For now, 
+* `R` is a statistical coding software used heavily for data analysis and statistical procedures.
+
+* `R Studio` is a nice IDE (Integrated Development Environment) for `R` that has a lot of convenient features. Think of this as just a convenient User Interface.
+
+* `R Markdown` allows users to mix regular Microsoft-Word-style text with code. The `.Rmd` file ending denotes an `R Mardkown` file. `R Markdown` has many options that we will use throughout the semester, but there's no need to worry about these now.
+
+
+### `R` Packages and the `tidyverse`
+
+You can think of `R` packages as add-ons to `R` that let you do things that `R` on its own would not be able to do. If you're in to video games, you can think of `R` packages as extra Downloadable Content (DLC). But, unlike most gaming DLC, `R` packages are always free and we will make very heavy use of `R` packages.
+
+The `tidyverse` is a series of `R` packages that are useful for data science. In the order that we will encounter them in this class, the core `tidyverse` packages are:
+
+1. `readr` for data import
+2. `ggplot2` for plotting data
+3. `dplyr` for data wrangling and summarizing
+4. `forcats` for factor (categorical) data
+5. `tidyr` for data tidying and reshaping
+6. `tibble` for how data is stored
+7. `stringr` for text data
+8. `purrr` for functional programming (we won't use this in our intro class)
+
+We will use packages outside of the core `tidyverse` as well, but the `tidyverse` is the main focus.
+
+We are going to change one option before proceeding. In the top file menu, click Tools -> Global Options -> R Markdown and then uncheck the box that says "Show output inline for all R Markdown documents". Don't worry much about this for now, but changing this option just means that code results will appear in the bottom-left window and graphs will appear in the bottom-right window of `R Studio`.
+
+## Putting Code in a `.Rmd` File
+
+In most analyses, the first thing that we will do that involves code is to load a package into `R` with the `library()` function. A package is just an `R` add-on that lets you do more than you could with just `R` on its own. To create a code chunk, click on the _Insert Code_ button (that looks like a green C with a + on it) -> `R`. For those that prefer keyboard shortcuts use "Ctrl + Alt + I" on PC or "Cmd + Option + I" on Mac. Within this code chunk, type in `library(tidyverse)` and run the code by either
+
+1. Clicking the "Run" button in the menu bar of the top-left window of `R Studio` or
+
+2. (Recommended) Clicking "Command + Enter" on a Mac or "Control + Enter" on a PC.
+
+Note that all code appears in grey boxes surrounded by three backticks while normal text has a different colour background with no backticks.
+
+```{r, echo = TRUE, message = FALSE}
+library(tidyverse)
+```
+
+When you run the previous line, some text will appear in the bottom-left window. We won't worry too much about what this text means now, but we also won't ignore it completely. You should be able to spot the 8 core `tidyverse` packages listed above as well as some numbers that follow each package. The numbers correspond to the package version. There's some other things too, but as long as this text does not start with "Error:", you're good to go!
+
+We have run `R` code using an `R` chunk. In your `R` chunk, on a new line, try typing in a basic calculation, like `71 + 9` or `4 / 3`, them run the line and observe the result. 
+
+`R` can perform basic calculations, but you could just use a calculator or Excel for that. In order to look at things that are a bit more interesting, we need some data.
+
+## Built in data (and the help menu)
+
+`R` comes with a lot of different data already included in it. You will see these often used in examples either online or in the help menu for specific functions. 
+
++ Lets check out the data called `mtcars`. You can load this in to R using the `data()` function. Create a new code chunk and load the mtcars data.
+
+<!-- insert code chunk here -->
+
+
++ We can learn more about the data by loading the help menu for mtcars. This can be done by either clicking on the Help menu (either at the top of the window or in the bottom right panel of R Studio) or by typing `?mtcars` in the console.
+
+<!-- insert code chunk here -->
+
+
++ Now, print just the first 6 rows of the mtcars data using the `head` function. After that, knit this document one last time and learn how to export our files.
+
+<!-- insert code chunk here -->

@@ -1,0 +1,141 @@
+---
+title: "Basic Statistical Analyses in R"
+author: "STAT 234"
+output: html_document
+---
+
+```{r include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  eval = FALSE
+  )
+
+```
+# Overview 
+
+In this document we will go through some of the basics doing a statistical analysis in R. 
+
+
+## Goals
+
+* Learn a few basics of R and R Studio
+* You will begin to develop good habits for directory and file management in R Studio
+* Learn how to do some basic "Stat 113 type" statistical analyses while using R.
+
+
+## Data Overview
+
+The dataset `ipa_recipes_brewerfriend.csv` contains data on over 10,000 homebrew beer recipes from the Brewer's Friend site. It is a subset of from the following: [https://www.kaggle.com/jtrofe/beer-recipes](https://www.kaggle.com/jtrofe/beer-recipes){target="_blank"}
+
+The variables included in our version are:
+
+Variable | Description
+---|------------
+Name | Name of the beer recipe
+Style | The beer style (will be American IPA for all recipes in the data)
+Size(L) | The size of the batch of beer (in liters)
+OG | The Original (Specific) Gravity of the unfermented beer (FYI, unfermented beer is called wort)
+FG | The Final (Specific) Gravity of the beer (i.e., after fermentation is complete)
+ABV | The percent Alcohol Content By Volume
+IBU | International Bittering Units - a crude measurement of the bitterness in a beer due to the amount of hops in it
+Color | The color of the finished beer, according to the Standard Reference Metric (SRM). In general, higher values are associated with darker beers
+BoilSize | The initial size of the boil (in liters)
+BoilTime | The number of minutes the wort is boiled - typically 60 or 90
+Efficiency | A measurement of how much of the starch in the grains (or extract) is converted into sugars
+BrewMethod | The method used to brew the beer: All Grain, Extract, or Partial-Mash. Of these, extract brewing is the method used by most beginners.
+
+The two specific gravities (OG and FG) are major measurements used by brewers to determine the alcohol content of a beer fermented from a particular wort (i.e., unfermented beer).  For reference, water is deemed to have a density at specific gravity of 1.000.
+
+### Exercises
+
+- With your neighbor(s), classify each variable as Categorical or Numerical
+
+## Sample Data Analysis
+
+### Load Necesary Packages
+
+One of the greatest features with R is that it has a huge number of custom built packages that can be used to help nearly any type of data. To gain access to these we move load the packages we will need for the analysis. This is done using the `library()` function.
+
+
+### Read in the Data
+
+When structured nicely, Comma Separate Value files (.csv extension) are some of the easiest data to load into your R Environment. While we will discuss importing different types of data in more detail in the upcoming weeks, basic tidy tabular data stored in a csv file can be imported very easily with the `read_csv`` function. 
+
+```{r, eval = FALSE}
+a_name_to_store_your_data_in_R_as_an_object <- read_csv("relative path to file")
+```
+
+
+The object you've created is data.frame (or, more specifically, a version of it called a tibble).
+
+#### Exercises
+
+1. Run the following code chunk and look at the error message that is displayed in the console. With your neighbor, take a few seconds to discuss why it doesn't work.
+
+```{r, eval=FALSE}
+ipas <- read_csv("/home/iramler/stat_234/notes/data/ipa_recipes_brewersfriend.csv")
+```
+
+> **Relative vs Absolute Paths:** Data files have a name and are located in a folder. (A folders is the same a directory. You will see both of these names in common use.) The folder containing the file may be nested within another folder and that folder maybe in yet another folder and so on. The specification of the list of folders to travel and the file name is called a _path_. A path that starts at the root/home folder of the computer is called an _absolute path_. A _relative path_ starts at a given folder and provides the folders and file starting from that folder. **Using relative paths will make a number of things easier when writing programs and is considered a good programming practice.**
+
+
+#### Variable types in R
+
+In your environment, check out what type of variable each column of our data is stored as. Compare that to what you came up with earlier. 
+
+> There are many different ways that R can store objects (called types, classes, or structures). Many of these have straightforward connections to concepts in statistics. (e.g., vectors are pretty similar to a variable in statistics, while a matrix can be thought of as a very crude looking data set) We will likely come across numerous types of objects throughout the semester and will introduce them as necessary.
+
+#### Simple Graphics
+
+We'll spend a bit of time this semester learning about graphics using the `ggplot2` package. For now, we'll just make a few basic plots using that package. Start by adding a line to load the `ggplots2` package your R chunk where we loaded the `readr` package. (Then run that new line of code.)
+
+#### Exercises
+
+2. Create a display of the alcohol content (ABV) in American IPAs.
+
+
+3. Create a display comparing the bitterness (measured in IBUs) for 60 vs 90 minute boils.
+
+
+4. Create a display to visualize the relationship between Original Gravity (OG) and Alcohol Content (ABV).
+
+#### Statistical Inference (and basic modeling)
+
+Many of the basic statistical inference procedures (both confidence intervals and hypothesis tests) have functions available in R without having to install or load any additional packages. Here are a few of the more common methods
+
+Method | Function
+-------|--------
+single proportion | `binom.test` (exact test - preferred) or `prop.test` (normal approximation)
+difference in two proportions | `prop.test` or `chisquare.test`
+single mean | `t.test`
+difference in two means - independent samples | `t.test`
+difference in two means - paired samples | `t.test`
+comparing multiple means | `aov` and `TukeyHSD` (post-hoc comparisons)
+correlation | `cor` and `cor.test`
+linear regression | `lm`
+logistic regression (STAT 213 topic) | `glm` 
+
+
+In addition to the above, there are thousands of other methods available in R. Many of these are in community built packages.
+
+Other functions you might find useful when doing statistical analyses are `summary`, `with`, and several from the `broom` package - `tidy`, `glance`, and `augment`. You will also want to become familiar with nicer ways to display tables of data/results when you "knit" an R Markdown. We'll see this in more detail when we get closer to the first project, but will use the `kable` function from the `knitr` package today as a quick preview.
+
+> A Note on randomization/resampling based inference: Resampling based inference (e.g., bootstrap confidence intervals and randomization hypothesis tests) are often failry easy to do in R too. Some of the more standard style (similar to what those in STAT 113 with Drs. Robin and Patti Lock see) have pre-made functions. (See the `boot` package for examples.) Non-standard resampling based inference is doable too - it just takes a little extra programming. Time permitting, we will see some basic approaches to writing our own resampling based inference programs. (Those that have taken CS 140 will also recognize the use of for-loops during that unit.)
+
+#### Exercises
+
+5. Consider the ABV of American IPAs.
+(a) Construct a 95% confidence interval for the mean ABV. Do so by providing a numeric *vector* of the data.
+
+(b) Construct a 90% CI for the mean ABV. 
+
+(c) Construct a 98% CI for the mean ABV while using the `with` function to pass the data in as an argument. Store the result as an object and investigate it using the `tidy` function from the `broom` package. After that, extract just the lower bound of the CI and round it to 2 decimal places.
+
+6. Is there a statistically significant difference in the IBUs for 60 minute vs 90 minute boils? Report just the results in a `tidy` tibble.
+
+7. Are there any statistically significant differences in Color for the three different brew methods? Check out the results (after fitting the appropriate statistical model) using each of the following functions: `summary`, `glance`, and `tidy`.
+
+8. Use OG and FG to predict the ABV of an IPA. 
+
+9. Use the `knitr` package and the `kable` function to construct tables of your results (from the `tidy` results). Round all digits to 3 places and provide a brief, but informative caption. Run the chunk to see what it looks like. At the end of this tutorial, we will knit our R Markdown file as an HTML page and see what the table looks like in the resulting document.

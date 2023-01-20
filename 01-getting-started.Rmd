@@ -93,13 +93,25 @@ We have run `R` code using an `R` chunk. In your `R` chunk, on a new line, try t
 + Lets check out the data called `mtcars`. You can load this in to R using the `data()` function. Create a new code chunk and load the mtcars data.
 
 <!-- insert code chunk here -->
+```{r}
+data("mtcars")
+```
+
 
 
 + We can learn more about the data by loading the help menu for mtcars. This can be done by either clicking on the Help menu (either at the top of the window or in the bottom right panel of R Studio) or by typing `?mtcars` in the console.
 
 <!-- insert code chunk here -->
+```{r}
+View(mtcars)
+```
+
 
 
 + Now, print just the first 6 rows of the mtcars data using the `head` function. After that, knit this document one last time and learn how to export our files.
 
 <!-- insert code chunk here -->
+```{r}
+head(mtcars)
+```
+

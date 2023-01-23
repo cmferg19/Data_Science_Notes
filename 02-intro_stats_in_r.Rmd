@@ -51,11 +51,28 @@ The two specific gravities (OG and FG) are major measurements used by brewers to
 
 - With your neighbor(s), classify each variable as Categorical or Numerical
 
+Variable Type | Examples
+---|------------
+Categorical Variables | Name, Style, and BrewMethod
+Numerical Variables | Size (L), OG, FG, ABV, IBU, Color, BoilSize, BoilTime, Efficiency
+
+
 ## Sample Data Analysis
 
 ### Load Necesary Packages
 
 One of the greatest features with R is that it has a huge number of custom built packages that can be used to help nearly any type of data. To gain access to these we move load the packages we will need for the analysis. This is done using the `library()` function.
+
+```{r}
+# clear the environment
+rm(list = ls())
+
+# import the appropriate packages
+library(here)
+library(readr)
+library(ggplot2)
+library(dplyr)
+```
 
 
 ### Read in the Data
@@ -63,9 +80,12 @@ One of the greatest features with R is that it has a huge number of custom built
 When structured nicely, Comma Separate Value files (.csv extension) are some of the easiest data to load into your R Environment. While we will discuss importing different types of data in more detail in the upcoming weeks, basic tidy tabular data stored in a csv file can be imported very easily with the `read_csv`` function. 
 
 ```{r, eval = FALSE}
-a_name_to_store_your_data_in_R_as_an_object <- read_csv("relative path to file")
-```
+# one way to load in the data by manually defining the relative file path
+# a_name_to_store_your_data_in_R_as_an_object <- read_csv("data/ipa_recipes_brewersfriend.csv")
 
+# load in the ipa data set that we want to load into R, using the "here()" function defines the file path and makes this easier for others to use your code
+ipas <- read_csv(here("data", "ipa_recipes_brewersfriend.csv"))
+```
 
 The object you've created is data.frame (or, more specifically, a version of it called a tibble).
 
@@ -79,6 +99,7 @@ ipas <- read_csv("/home/iramler/stat_234/notes/data/ipa_recipes_brewersfriend.cs
 
 > **Relative vs Absolute Paths:** Data files have a name and are located in a folder. (A folders is the same a directory. You will see both of these names in common use.) The folder containing the file may be nested within another folder and that folder maybe in yet another folder and so on. The specification of the list of folders to travel and the file name is called a _path_. A path that starts at the root/home folder of the computer is called an _absolute path_. A _relative path_ starts at a given folder and provides the folders and file starting from that folder. **Using relative paths will make a number of things easier when writing programs and is considered a good programming practice.**
 
+This code does not work because `read.csv()` requires the relative file path to locate a file.  This is the absolute path which makes it difficult for `R` to locate the file. 
 
 #### Variable types in R
 
@@ -93,6 +114,23 @@ We'll spend a bit of time this semester learning about graphics using the `ggplo
 #### Exercises
 
 2. Create a display of the alcohol content (ABV) in American IPAs.
+
+```{r}
+# Filter to isolate the American IPAs
+American_ipas <- filter(ipas, Style == "American IPA")
+
+# use the new data set to model the ABV using a boxplot
+ggplot(data = American_ipas, mapping = aes(Style, ABV))+
+     geom_boxplot()+
+     labs(x = "Style", y = "Alcohol content (ABV)")
+
+# use the new data set to model the ABV using a histogram
+ggplot(data = American_ipas, mapping = aes(ABV))+
+     geom_histogram(binwidth = .1, color = "grey20")+
+     labs(x = "Alcohol Content (ABV)")
+     
+
+```
 
 
 3. Create a display comparing the bitterness (measured in IBUs) for 60 vs 90 minute boils.

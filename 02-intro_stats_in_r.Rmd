@@ -135,8 +135,18 @@ ggplot(data = American_ipas, mapping = aes(ABV))+
 
 3. Create a display comparing the bitterness (measured in IBUs) for 60 vs 90 minute boils.
 
+```{r}
+# use a box plot to compare the IBU in 60 vs 90 minute boils
+ggplot(data = ipas, mapping = aes(BoilTime, IBU))+
+     geom_boxplot()+
+     labs(x = "Boil Time (Minutes)", y = "Bitterness (IBU)")+
+     facet_wrap(~ipas$BoilTime)
+
+```
+
 
 4. Create a display to visualize the relationship between Original Gravity (OG) and Alcohol Content (ABV).
+
 
 #### Statistical Inference (and basic modeling)
 

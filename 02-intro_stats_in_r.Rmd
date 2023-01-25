@@ -116,24 +116,41 @@ We'll spend a bit of time this semester learning about graphics using the `ggplo
 2. Create a display of the alcohol content (ABV) in American IPAs.
 
 ```{r}
-# Filter to isolate the American IPAs
-American_ipas <- filter(ipas, Style == "American IPA")
-
 # use the new data set to model the ABV using a boxplot
-ggplot(data = American_ipas, mapping = aes(Style, ABV))+
+ggplot(data = ipas, mapping = aes(Style, ABV))+
      geom_boxplot()+
-     labs(x = "Style", y = "Alcohol content (ABV)")
+     labs(x = "Style", y = "Alcohol content (%)")
 
 # use the new data set to model the ABV using a histogram
-ggplot(data = American_ipas, mapping = aes(ABV))+
+ggplot(data = ipas, mapping = aes(ABV))+
      geom_histogram(binwidth = .1, color = "grey20")+
-     labs(x = "Alcohol Content (ABV)")
+     labs(x = "Alcohol Content (%)")
      
 
 ```
+Considering that most beer is 5-7% ABV, the fact that there is a beer with an ABV of 50% in this data is a little unrealistic. Here is how we can remove beers with unrealistic ABVs.
+
+```{r}
+# use the filter function to knock off the beers with an ABV of >15%
+ipas <- filter(ipas, ABV <15)
+
+# regenerate the histogram
+# use the new data set to model the ABV using a histogram
+ggplot(data = ipas, mapping = aes(ABV))+
+     geom_histogram(binwidth = .1, color = "grey20", 
+                    fill = "dodgerblue")+
+     labs(x = "Alcohol Content (%)")
+```
+
 
 
 3. Create a display comparing the bitterness (measured in IBUs) for 60 vs 90 minute boils.
+
+```{r}
+# Keep only beers with legit IBU (less than 150)
+ipas <- filter(ipas, IBU < 150)
+```
+
 
 ```{r}
 # use a box plot to compare the IBU in 60 vs 90 minute boils
@@ -141,12 +158,24 @@ ggplot(data = ipas, mapping = aes(BoilTime, IBU))+
      geom_boxplot()+
      labs(x = "Boil Time (Minutes)", y = "Bitterness (IBU)")+
      facet_wrap(~ipas$BoilTime)
-
+     
+ggplot(data = ipas, mapping = aes(BoilTime, IBU, group = BoilTime))+
+     geom_boxplot()+
+     labs(x = "Boil Time (Minutes)", y = "Bitterness (IBU)")
+     
 ```
 
 
 4. Create a display to visualize the relationship between Original Gravity (OG) and Alcohol Content (ABV).
 
+```{r}
+# To visualize the relationship between OG and ABV, I will use a scatterplot
+ggplot(data = ipas, mapping = aes(OG, ABV))+
+     geom_point()+
+     labs(x = "Original Gravity (quarts)", y = "Alcohol by Volume (%)")+
+  geom_smooth(method = 'lm') # defines this as a linear model
+     
+```
 
 #### Statistical Inference (and basic modeling)
 
@@ -169,15 +198,24 @@ In addition to the above, there are thousands of other methods available in R. M
 
 Other functions you might find useful when doing statistical analyses are `summary`, `with`, and several from the `broom` package - `tidy`, `glance`, and `augment`. You will also want to become familiar with nicer ways to display tables of data/results when you "knit" an R Markdown. We'll see this in more detail when we get closer to the first project, but will use the `kable` function from the `knitr` package today as a quick preview.
 
-> A Note on randomization/resampling based inference: Resampling based inference (e.g., bootstrap confidence intervals and randomization hypothesis tests) are often failry easy to do in R too. Some of the more standard style (similar to what those in STAT 113 with Drs. Robin and Patti Lock see) have pre-made functions. (See the `boot` package for examples.) Non-standard resampling based inference is doable too - it just takes a little extra programming. Time permitting, we will see some basic approaches to writing our own resampling based inference programs. (Those that have taken CS 140 will also recognize the use of for-loops during that unit.)
+> A Note on randomization/resampling based inference: Resampling based inference (e.g., bootstrap confidence intervals and randomization hypothesis tests) are often fairly easy to do in R too. Some of the more standard style (similar to what those in STAT 113 with Drs. Robin and Patti Lock see) have pre-made functions. (See the `boot` package for examples.) Non-standard resampling based inference is doable too - it just takes a little extra programming. Time permitting, we will see some basic approaches to writing our own resampling based inference programs. (Those that have taken CS 140 will also recognize the use of for-loops during that unit.)
 
 #### Exercises
 
 5. Consider the ABV of American IPAs.
 (a) Construct a 95% confidence interval for the mean ABV. Do so by providing a numeric *vector* of the data.
 
-(b) Construct a 90% CI for the mean ABV. 
+```{r}
+# use a one-sample t test to calculate the 95% confidence interval
+t.test(ipas$ABV)
+```
 
+
+(b) Construct a 90% CI for the mean ABV. 
+```{r}
+# use a one-sample t test to calculate the 90% confidence interval
+t.test(ipas$ABV, conf.level = 0.9)
+```
 (c) Construct a 98% CI for the mean ABV while using the `with` function to pass the data in as an argument. Store the result as an object and investigate it using the `tidy` function from the `broom` package. After that, extract just the lower bound of the CI and round it to 2 decimal places.
 
 6. Is there a statistically significant difference in the IBUs for 60 minute vs 90 minute boils? Report just the results in a `tidy` tibble.

@@ -218,10 +218,56 @@ t.test(ipas$ABV, conf.level = 0.9)
 ```
 (c) Construct a 98% CI for the mean ABV while using the `with` function to pass the data in as an argument. Store the result as an object and investigate it using the `tidy` function from the `broom` package. After that, extract just the lower bound of the CI and round it to 2 decimal places.
 
+```{r}
+# construct the 98% confidence interval
+abv_ci98 <- with(ipas, t.test(ABV, conf.level = 0.9))
+
+# access the tidy function from the broom package
+abv_ci98_tidy <- broom::tidy(abv_ci98)
+
+# extract the lower bound and round it to 2 decimal places
+round(abv_ci98_tidy$conf.low, digits = 2)
+```
+
 6. Is there a statistically significant difference in the IBUs for 60 minute vs 90 minute boils? Report just the results in a `tidy` tibble.
+
+```{r}
+ibu_60_vs_90 <- ipas %>%
+  with(t.test(IBU~BoilTime))%>%
+  broom::tidy()
+```
 
 7. Are there any statistically significant differences in Color for the three different brew methods? Check out the results (after fitting the appropriate statistical model) using each of the following functions: `summary`, `glance`, and `tidy`.
 
+```{r}
+color_anova <- ipas %>%
+  with(aov(Color~BrewMethod))
+
+summary(color_anova)
+```
+```{r}
+# clean this output up a bit
+broom::glance(color_anova)
+```
+
+```{r}
+# use the tidy function to create another tibble
+broom::tidy(color_anova)
+```
+
+
 8. Use OG and FG to predict the ABV of an IPA. 
 
+```{r}
+abv_lmod <- ipas %>% with(lm(ABV ~ OG +FG))
+```
+
+
 9. Use the `knitr` package and the `kable` function to construct tables of your results (from the `tidy` results). Round all digits to 3 places and provide a brief, but informative caption. Run the chunk to see what it looks like. At the end of this tutorial, we will knit our R Markdown file as an HTML page and see what the table looks like in the resulting document.
+
+```{r}
+abv_lmod_tidy <- broom::tidy(abv_lmod)
+
+knitr::kable(abv_lmod_tidy, digits = 3, caption = "Linear model results using OG and FG to predict alcohol content (ABV).")
+```
+

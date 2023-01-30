@@ -10,6 +10,9 @@ knitr::opts_chunk$set(
   eval = FALSE
   )
 
+# echo = FALSE it will not share the code that you wrote to get to an output
+# message = FALSE, does not print out messages associated with running code
+# eval = FALSE, does not automatically run all of the code, if this is set = TRUE, you will see the result
 ```
 
 # Reading Tabular Data in R
@@ -54,23 +57,26 @@ At times it may be necessary to create small datasets manually within R. We will
 The first type of data we will consider is when you need to make the equivalent of a single variable of values. This is most easily done by create a *vector* in R. Here are a few examples.
 
 ```{r}
+# different ways to create sequences in R using built in methods.  A lot of these are more quick and dirty compared to if you are trying to import data
 x1 <- c(5,1,8,2)
 x2 <- 1:12
 x3 <- 5:-6
 x4 <- c("we","don't", "talk", "about","Bruno")
 x5 <- c(x1, x3)
+x6 <- c(x1, x4) # converts x1 into a character and combines it with x4
 ```
 
 If we want to extract individual components out of a vector we do so using commands like the following. Before running each, try to guess what the result will be. Then check your guess by running the code.
 
 ```{r}
+# different ways to manually extract information from the data that we just generated
 x1[1]
 x1[4]
 x4[1:4]
 x4[c(1,3,4,5)]
-x1[-1]
+x1[-1] # negative index tells R to provide everything except for the variable/output that is negated
 x1[5]
-x1[0]
+x1[0] # place holder of length 0, recognizes how things are stored and values appear after
 
 ```
 
@@ -83,8 +89,8 @@ We can also create a data set directly within `R` with the `tibble()` function i
 ```{r, message = FALSE, warning = FALSE}
 ## Hello! How do I get rid of the units from the values in
 ## my variable `x`? Thanks!
-library(readr)
-test_df <- read_csv("data/parsedf.csv")
+library(here)
+test_df <- read_csv(here("data","parsedf.csv"))
 head(test_df)
 ```
 
@@ -93,10 +99,25 @@ We want to post on StackExchange for someone to help us convert a variable from 
 ```{r, message = FALSE}
 ## Hello! How do I get rid of the units from the values in
 ## my variable `xvar`? Thanks!
+
+# this is a method to create a small data set using the tibble library
 library(tibble)
 test_df2 <- tibble(xvar = c("20,000 dollars", "40 dollars"),
                    yvar = c(1, 2))
 test_df2
+```
+
+### Extracting values from a tibble/dataframe
+
+```{r}
+# extract a variable by name
+test_df2$xvar # stores values as a vector
+
+#extract a variable by location
+test_df2[ , 1] # blank in rows spot means take all rows and it will be stored as a tibble
+
+# extract an observation by location
+test_df2[2,] # this will pull the entire second row
 ```
 
 
@@ -107,8 +128,10 @@ As we saw in previous lessons, tabular data stored in a CSV files can be read in
 First, load in the example data sets
 
 ```{r}
-UBSprices <- read_csv("data/UBSprices.csv")
-airlines <- read_csv("data/airline-safety.csv")
+library(here)
+
+UBSprices <- read_csv(here("data", "UBSprices.csv"))
+airlines <- read_csv(here("data", "airline-safety.csv"))
 ```
 
 Let's take a closer look at the airlines data. Look in your environment panel and expand the airlines object. Notice that it gives you a small amount of information about the variables? Also notice that some of the variables' names have spaces in them. This is generally a bad practice, but is commonplace enough that the R allows a special way to access these variables. Note, you can also check the names of the variables using the `names` function in R.
@@ -118,6 +141,7 @@ To access variables with spaces in their names we need to use  a backtick mark, 
 Lets try this out. First use the ticks to extract just the `fatalities 1985_1999` variable.
 
 ```{r}
+# r will struggle to pull in and recognize variable names with spaces in it
 airlines$`fatalities 1985_1999`
 ```
 
@@ -126,7 +150,7 @@ Note that in some cases, R allows you to be sloppy and you can use quotes instea
 Side note: This can cause some annoyances when sharing code with people that aren't familiar with the tick structure. One way around this is use the `name.repair` option with `make.names` to  "fix" unfriendly names in data.frames. (Using `name_repair = "universal"` is also a useful way to fix these.)
 
 ```{r, echo = TRUE, eval = FALSE}
-
+airlines <- read_csv(here("data", "airline-safety.csv"), name_repair = make.names)
 ```
 
 (Note that the tick mark structure is still useful in other places. We will likely see examples where we will make use of it.)
@@ -136,6 +160,12 @@ Side note: This can cause some annoyances when sharing code with people that are
 
 Suppose you know of a tabular (e.g., csv) file located on the web. Instead of downloading it and then reading it in, you can often just provide the URL as the file. For example, try to import the `slc_towns_active_cases.csv` from [https://github.com/iramler/stlawu_covid](https://github.com/iramler/stlawu_covid){target="_blank"}
 
+```{r}
+# copy the url for the raw data from github and place the url in quotes
+url = "https://raw.githubusercontent.com/iramler/stlawu_covid/main/slc_towns_active_cases.csv"
+
+active_cases <- read_csv(url)
+```
 
 ### Exporting Files
 

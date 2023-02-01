@@ -175,9 +175,9 @@ Try this now by saving a copy of `test_df2` to your `data` folder.
 
 ```{r}
 # exporting data sets by writing new .csv files
-write_csv(x = test_df2, 
-          file = here("data", "test_df2.csv")
-               )
+# write_csv(x = test_df2, 
+          #file = here("data", "test_df2.csv")
+               #)
 ```
 
 
@@ -193,7 +193,57 @@ Some of the advantages of using the `Import Dataset` tool is that you don't have
 
 2. Read in the "polls" data using read_csv and inspect it. Fix the issue by using the appropriate option in ``read_csv``
 
+```{r}
+# I choose to use the "here" function because I initialized this repo to work with Github.  If people were to fork my repo, they could run this code because the "here" puts everything in terms of their relative file path
+polls <- read_csv(here("data", "rcp-polls.csv"))
+
+# without the "here" function: read_csv("data/rcp-polls.csv")
+
+View(polls)
+```
+
+
 3. Each of the files, `data1.csv`, `data2.csv`, and `data3.xlsx`, have some problems with them when using read_csv. For each file, 
 a. import them with ``read_csv``, 
+
+```{r}
+# import data1.csv
+data1 <- read_csv(here("data", "data1.csv"))
+
+# this does not work because we used the wrong delimiter -> this is a semicolon delimited sheet so we need to specify the deliminator as a semicolon. You can also use read_csv2()
+
+data1_fix1 <- read_delim(here("data", "data1.csv"), 
+                    delim = ";"
+                    )
+
+# data1_headerchange <- read_csv2(here("data", "data1.csv"), col_names = c("a", "b", "c"))
+# this converts the data from numbers to characters so this is not the best way to rename variables
+
+# one way to rename variables that maintains data types
+names(data1_fix1) <- c('a', 'b', 'c')
+```
+
+```{r}
+# import data2.csv
+data2 <- read_csv(here("data", "data2.csv"))
+
+# this data set does not have a header so it was imported in a weird way.  If we look at the raw data, it looks like the first row is a row of data as opposed to a header
+
+# Fix 1
+data2_fix1 <- read_csv(here("data","data2.csv"), col_names = FALSE)
+
+# Fix 2
+data2_fix2 <- read_csv(here("data","data2.csv"), col_names = c("x", "y", "z"))
+```
+
+```{r}
+# import data 3, to do this we first have to add in the readxl package
+library(readxl)
+
+
+data3 <- read_xlsx(here("data", "data3.xlsx"))
+
+```
+
 b. inspect them to see if you can tell what is wrong, and
 c. without directly editing the file, try to read them in properly.

@@ -174,7 +174,10 @@ Occasionally you may want to save a data set. (e.g., after you have cleaned a me
 Try this now by saving a copy of `test_df2` to your `data` folder. 
 
 ```{r}
-
+# exporting data sets by writing new .csv files
+write_csv(x = test_df2, 
+          file = here("data", "test_df2.csv")
+               )
 ```
 
 
@@ -185,6 +188,8 @@ Next, lets try a series of exercises to learn about some of the different option
 ### Exercises
 
 1. What are some advantages and disadvantages of using the `Import Dataset` tool in R Studio?
+
+Some of the advantages of using the `Import Dataset` tool is that you don't have to write out the code for it and if you are unsure of the file path, it will define it for you. It also has the ability to change the structure of the data if you need to manipulate it.  Some disadvantages include how it is difficult for others to replicate.  If you were to send this data to other individuals, they probably would not be able to run it because it is specific to the file path you are using. Another disadvantage is that if you use this tool and just put it in the environment, the .Rmd file will not recognize it unless its in the actual .Rmd file. 
 
 2. Read in the "polls" data using read_csv and inspect it. Fix the issue by using the appropriate option in ``read_csv``
 

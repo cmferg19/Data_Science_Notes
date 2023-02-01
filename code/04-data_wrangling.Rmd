@@ -1,0 +1,388 @@
+---
+title: "Introduction to dplyr"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(results='hide')
+```
+
+
+# Introduction to Data Wrangling via the dplyr package
+
+## Introduction
+
+Data wrangling (also known as data manipulation or munging) is central to data analysis and is often one of the most time consuming portion of an analysis. The `dplyr` package contains a suite of functions to make data wrangling easier. The core functions of the `dplyr` package can be thought of as verbs for data wrangling.
+
+
+Verb(s)               | Meaning
+--------------------- | -----------------------------------------------------
+`filter` and `slice`  | pick specific observations (i.e. specific rows)
+`arrange`             | reorder the rows
+`select`              | pick variables by their names (i.e. specific columns)
+`mutate`              | add new calculated columns to a data frame
+`summarize`           | aggregate many rows into a single row 
+
+
+In this example we will explore how to use each of these functions, as well as how to combine them with the `group_by` function for groupwise manipulations.
+
+To begin, let's make sure that our data set and the `dplyr` package are loaded
+
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(dplyr)
+colleges <- read_csv("data/colleges2015.csv")
+
+```
+
+**Data**: The file `college2015.csv` contains information on predominantly bachelor's-degree granting institutions from 2015 that might be of interest to a college applicant.
+
+To get a feel for what data are available, look at the first couple rows. (The `head` and `tail` functions are a pair of  tools to help you take a quick look at the data without printing all of it.)
+
+```{r}
+head(colleges)
+```
+
+and maybe the last six rows
+
+```{r}
+tail(colleges)
+```
+
+and the structure of the data frame.
+
+```{r}
+str(colleges)
+```
+
+(Note that the `str` function print to the console the same info you get by expanding the data in the Environment tab.)
+
+
+Variable        | Description 
+--------------- | ----------- 
+`unitid`        | A unique ID number for each school 
+`college`       | School name 
+`type`          | School type: public or private 
+`city`          | City 
+`state`         | State abbreviation 
+`region`        | Region of the U.S. 
+`admissionRate` | Proportion of undergraduate applicants admitted 
+`ACTmath`       | Median ACT math score 
+`ACTenglish`    | Median ACT english score 
+`undergrads`    | Undergraduate enrollment 
+`cost`          | Total cost of attendance 
+`gradRate`      | Proportion of students graduating within six years 
+`FYretention`   | Proportion of first year students returning for a second year 
+`fedloan`       | Proportion of students with federal student loans 
+`debt`          | Median principal of student loans entering repayment 
+
+
+#### 0. Piping
+
+By now, you have likely seen R code that uses the pipe `%>%` to pass results from one line of code to the next. This is most useful for when we apply multiple verbs to a chunk of code like outlined below.
+
+```{r eval=FALSE, echo=TRUE}
+# Do not run this code
+
+end_result <- initial_data_object %>%
+                # the . in the next line denotes where the previous lines result is placed
+                first_function(., function_input1, function_input2, ...) %>% 
+                second_function(., function_input1, function_input2, ...) %>% 
+                third_function(., function_input1, function_input2, ...) %>%
+                nth_function(., function_input1, function_input2, ...)
+```
+
+
+Much of this tutorial involves only using a single verb at a time, so we will only use it  occasionally. You are welcome to use it if you like for any exercises within, even if they only require one verb.
+
+
+### 1. Filtering rows
+
+To extract the rows only for colleges and universities in a specific state we use the `filter` function. For example, we can extract the colleges in New York from the **colleges** data set using the following code:
+
+```{r}
+ny <- filter(colleges, state == "NY")
+head(ny)
+```
+
+**Remarks**
+
+* The first argument given to `filter` is always the data frame (this is true for all the core functions in `dplyr`), followed by logical tests that the returned cases must pass. In our example, the test was whether the school was in New York, which is written as `state == "NY"`.
+* Remember: we have to use `==` to indicate equality/equivalence. (As `=` is used for assignment, like `->`, and, more importantly, for passing named inputs into functions.)
+* When testing character variables, be sure to use quotes to specify the value of the variable that you are testing.
+* **To specify multiple tests**, use a comma to separate the tests (think of the comma as the word "and"). You can also use the `&` if you prefer. For example,
+
+```
+smallNY <- filter(colleges, state == "NY", undergrads < 2000)
+```
+
+returns only those rows corresponding to schools in Wisconsin with fewer than 2,000 undergraduate students.
+
+* To specify that <u>at least one</u> test must be passed, use the `|` character (aka "or") instead of the comma. For example, the below test checks whether a college is in New York or Minnesota or Iowa, so it returns all of the colleges in New York, Minnesota, and Iowa.
+
+```
+NyMnIa <- filter(colleges, state == "NY" | state == "MN" | state == "IA")
+```
+Alternatively, when dealing with a longer list of choices within the same variable, you can use the `%in%` command. While slightly more "R specific", this is a far better approach to take when you can multiple "or" conditions on the same variable to keep track of.
+
+```{r}
+NyMnIa <- filter(colleges, state %in% c("NY", "MN", "IA") )
+```
+
+
+* You can use both `|` and `,` to specify multiple tests. For example, we can return all colleges with fewer than 2,000 undergraduate students in New York, Minnesota, and Iowa.
+
+```
+smallNyMnIa <- filter(colleges, state == "NY" | state == "MN" | state == "IA", undergrads < 2000)
+```
+
+
+* Common comparison operators for the tests include: `>`, `>=`, `<`, `<=`, `!=` (not equal), `==` (equal), `%in%`, and `between`.
+
+* Another common task is to remove rows with missing values, there are several ways to do this. For example, using the R command `na.omit`,
+
+```
+colleges <- na.omit(colleges)
+``` 
+      
+will reduce the data set to only rows with no missing values. You can the `filter` function to drop rows with missing values in only a single variable. For example, 
+
+```
+colleges <- filter(colleges, !is.na(cost))
+``` 
+    
+will eliminate only rows with `NA` in the cost column. 
+
+
+#### Exercises
+
+1) Construct a data set with only Vermont colleges? (The abbreviation for Vermont is VT.) Feel free to try out piping if you'd like.
+
+2) Construct a data set containing private Vermont colleges with at least 1000 undergraduates.
+
+3) Construct a data set containing all private Vermont colleges or public colleges with fewer than 2000 undergraduates.
+
+### 2. Slicing rows
+
+To extract rows 10 through 16 from the **colleges** data frame we use the `slice` function.
+
+```{r}
+slice(colleges, 10:16)
+```
+
+
+**Remarks**
+
+* **To select consecutive rows**, create a vector of the row indices by separating the first and last row numbers with a `:`. 
+* **To select non-consecutive rows**, create a vector manually by concatenating the row numbers using `c()`. For example, to select the 2nd, 18th, and 168th rows use `slice(colleges, c(2, 18, 168))`.
+
+
+#### Exercises
+
+4) How do you decide between using `filter` and `slice` for subseting rows?
+
+
+### 3. Arranging rows
+
+To sort the rows by total cost, from the least expensive to the most expensive, we use the `arrange` function.
+
+```{r}
+costDF <- arrange(colleges, cost)
+head(costDF)
+```
+
+
+**Remarks**
+
+* By default, `arrange` assumes that we want the data arranged in ascending order by the specified variable(s).
+* **To arrange the rows in descending order**, wrap the variable name in the `desc` function. For example, to arrange the data frame from most to least expensive we would use the following command:
+
+```
+costDF <- arrange(colleges, desc(cost))
+```
+
+* To arrange a data frame by the values of multiple variables, list the variables in a comma separated list. The order of the variables specifies the order in which the data frame will be arranged. For example,
+
+```
+actDF <- arrange(colleges, desc(ACTmath), desc(ACTenglish))
+```
+
+reorders **colleges** first by the median ACT math score (in descending order) and then by the ACT english score (in descending order)
+
+
+#### Exercises
+
+5) What school is most expensive? 
+
+6) What school has the least expensive tuition in Wyoming (WY)?
+
+7) Suppose we wanted to find the ten most expensive schools and store the result as a new object.
+
+8) Which school has the most expensive tuition in New York?
+
+### 4. Selecting columns
+
+Suppose that you are only interested in a subset of the columns in the data set---say, `college`, `city`, `state`, `undergrads`, and `cost`---and want to create a data frame with only these columns. To do this, we `select` the desired columns:
+
+```{r}
+lessCols <- select(colleges, college, city, state, undergrads, cost)
+head(lessCols)
+```
+
+**Remarks**
+
+* After specifying the data frame, list the variable names to select from the data frame separated by commas.
+* In some cases you may want to drop a small number of variables from a data frame. In this case, putting a negative sign before a variable name tells `select` to select all but the negated variables. For example, if we only wished to drop the `unitid` variable we run the following command:
+
+```{r}
+drop_unitid <- select(colleges, -unitid)
+head(drop_unitid)
+```
+
+
+### 5. Mutating data (adding new columns)
+
+Data sets often do not contain the exact variables we need, but contain all of the information necessary to calculate the needed variables. In this case, we can use the `mutate` function to add a new column to a data frame that is calculated from other variables. For example, we may wish to report percentages rather than proportions for the admissions rate.
+
+```{r}
+colleges <- mutate(colleges, admissionPct = 100 * admissionRate)
+```
+
+**Remarks**
+
+* After specifying the data frame, give the name of the new variable and it's definition. Notice that we need to use `=` to assign the value of the new variable within mutate, not `<-`. (This is because the new variable is not a new object, just an extra piece of information we are storing within a different object.)
+* **To add multiple variables once**, separate the list of new variables by commas. For example, we can also add percentage versions of `FYretention` and `gradRate`.
+
+```{r}
+colleges <- mutate(colleges, FYretentionPct = 100 * FYretention,
+                   gradPct = 100 * gradRate)
+```
+
+
+### 6. Summarizing rows
+
+To create summary statistics for columns within the data set we must aggregate all of the rows using the `summarize` command. (Note that you can also use the British spelling: `summarise`.) For example, to calculate the median cost of all `r nrow(colleges)` colleges in our data set we run the following command:
+
+```{r}
+summarize(colleges, medianCost = median(cost, na.rm = TRUE))
+```
+
+**Remarks**
+
+* As with all of the functions we have seen, the first argument should be the name of the data frame.
+* We add `na.rm = TRUE` here to remove any missing values in the `cost` column before the calculation. Many functions, including this summarize function, will return an error if there are missing values (blanks, `NA`s or `NaN`s) in your data.
+* `summarize` returns a data frame, with one row and one column.
+* We can ask for multiple aggregations in one line of code by simply using a comma separated list. For example, we can calculate the five number summary of `cost` for all `r nrow(colleges)` colleges in our data set
+
+```{r}
+summarize(colleges, 
+          min = min(cost, na.rm = TRUE), 
+          Q1 = quantile(cost, .25, na.rm = TRUE), 
+          median = median(cost, na.rm = TRUE), 
+          Q3 = quantile(cost, .75, na.rm = TRUE), 
+          max = max(cost, na.rm = TRUE))
+```
+    
+* Notice that even when multiple statistics are calculated, the result is a data frame with one row and the number of columns correspond to the number of summary statistics.
+
+It is worth noting that some summary statistics (e.g., the five number summary) can be calculated in `dplyr` in other ways. For example, 
+
+```{r}
+summarize(colleges,
+          quantile_statistic = quantile(x = cost, probs = seq(0, 1, 0.25), na.rm = TRUE), q = seq(0, 1, 0.25)         )
+```
+
+However, it is my opinion that this is more complex for those just learning `dplyr`.
+
+#### Exercises
+
+9) What happens if we remove `na.rm = TRUE` from the code above?
+
+
+### 7. Groupwise manipulation
+
+Often it is of interest to manipulate data within groups. For example, we might be more interested in creating separate summaries for each state, or for private and public colleges. To do this we must first tell R what groups are of interest using the `group_by` function, and then we can use any of the above functions. Most often `group_by` is paired with `summarise` or `mutate`.
+
+Let's first consider comparing the cost of private and public colleges. First, we must specify that the variable `type` defines the groups of interest.
+
+```{r}
+colleges_by_type <- group_by(colleges, type)
+```
+
+**Remarks**
+
+* After specifying the data frame, list the categorical variable(s) defining the groups.
+
+* When we print the data frame it tells us the variables that define the groups and how many groups are in the data frame. This provides sanity checks, so be sure to pay attention to if this matches your expectation! For example, if there were any typos in the column or if just one value is capitalized (such as Public) we would be told there are more than two groups. 
+
+* `group_by` statements are almost always used as part of a piped chain of commands. It is rare that you would want to just group a dataset without then performing some further wrangling on it.
+
+* The `ungroup` command can be used to remove a data frame of any groups constructed by `group_by`.
+
+
+* Multiple variables can be used to specify the groups. For example, to specify groups by state and type, we would run the following command:
+
+```
+colleges_state_type <- group_by(colleges, state, type)
+```
+
+* If using multiple `group_by` statements on the same data frame, only the last one will be applied. For example,
+
+```
+colleges_state_type <- colleges %>% group_by(state) %>% group_by(type)
+```
+
+Will only have groups based on the type of college, not the state.
+
+
+#### Exercises
+
+10) Verify the first two statements by (a) printing both `colleges` and `colleges_by_type` to the console and (b) investigating each in the Environment panel.
+
+11) Verify the last two statements by running the code provided in them.
+
+
+#### Combining `group_by` with other commands 
+
+Once we have a grouped data frame, we can obtain summaries by group via `summarize`. For example, the five number summary of cost by institution type is obtained below
+
+```{r}
+colleges %>%
+  group_by(state) %>%
+  summarize(min = min(cost, na.rm = TRUE), 
+            Q1 = quantile(cost, .25, na.rm = TRUE), 
+            median = median(cost, na.rm = TRUE), 
+            Q3 = quantile(cost, .75, na.rm = TRUE), 
+            max = max(cost, na.rm = TRUE)
+            )
+```
+
+We can also calculate new variables within groups, such as the standardized cost of attendance within each state:
+
+```{r}
+colleges_by_state <- group_by(colleges, state) %>%
+                      mutate( 
+                            mean.cost = mean(cost, na.rm = TRUE), 
+                            sd.cost = sd(cost, na.rm = TRUE),
+                            z.cost = (cost - mean.cost) / sd.cost
+                            )
+colleges_by_state
+```
+
+**Remarks**
+
+* `mutate` allows you to use variables defined earlier to calculate a new variable. This is how `z.cost` was calculated.
+
+### 8. Additional Exercises
+
+12. Filter the rows for colleges in Great Lakes or New England regions.
+
+13. Which school in Great Lakes or New England region has the highest first-year retention rate in this reduced data set.
+
+14. Which school in Great Lakes or New England region has the lowest admissions rate in this reduced data set.
+
+15. Using the full data set, create a column giving the cumulative average cost of attendance, assuming that students finish in four years and that costs increase 3% per year. Name this new column `total_cost_4yrs`.
+
+16. Using the full data set, summarize the total cost of attendance by region by calculating the 10th, 50th, and 90th percentiles. Then arrange them by median costs (from highest to lowest).
+
+17. Place your result from the previous question in a nicely formatted, HTML friendly, table.

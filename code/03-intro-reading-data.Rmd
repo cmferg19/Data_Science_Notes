@@ -194,13 +194,38 @@ Some of the advantages of using the `Import Dataset` tool is that you don't have
 2. Read in the "polls" data using read_csv and inspect it. Fix the issue by using the appropriate option in ``read_csv``
 
 ```{r}
-# I choose to use the "here" function because I initialized this repo to work with Github.  If people were to fork my repo, they could run this code because the "here" puts everything in terms of their relative file path
-polls <- read_csv(here("data", "rcp-polls.csv"))
+library(readr)
 
-# without the "here" function: read_csv("data/rcp-polls.csv")
-
-View(polls)
+# read in data set using url, when using this method from github, you need to use the raw data 
+polls <- read_csv("https://raw.githubusercontent.com/iramler/stat234/main/notes/data/rcp-polls-messy.csv")
 ```
+
+Upon inspection of this data, the MoE data field contains numbers but is listed as a character data type. The MoE is referring to the margin of error associated with the poll.  These values are reading in as characters because there is a value that uses two dashes to mark a space with what should be "NA"
+
+To fix this, we can add in a new argument `na = c("","NA","--")`
+
+```{r}
+# read in data set using url and redefine the values that are set to NA to also include the -- entry. The col_types() argument is telling the program to look through the data and only pull out the numbers.  Then it will dump everything that is not a number inside of the data.  
+polls <- read_csv("https://raw.githubusercontent.com/iramler/stat234/main/notes/data/rcp-polls-messy.csv",
+                  na = c("","NA","--"),
+                  col_types = list(Sample = col_number()
+                                   )
+                  
+                  )
+```
+
+Another issue that we have are spaces in the variable names.  To fix this, we can use the `name_repair = make.names` function to change the structure of the column names.  This standardizes how the names are stored in R
+
+```{r}
+# read in data set using url and redefine the values that are set to NA to also include the -- entry. The col_types() argument is telling the program to look through the data and only pull out the numbers.  Then it will dump everything that is not a number inside of the data.  
+polls <- read_csv("https://raw.githubusercontent.com/iramler/stat234/main/notes/data/rcp-polls-messy.csv",
+                  na = c("","NA","--"),
+                  col_types = list(Sample = col_number()),
+                  name_repair = make.names
+                  
+                  )
+```
+
 
 
 3. Each of the files, `data1.csv`, `data2.csv`, and `data3.xlsx`, have some problems with them when using read_csv. For each file, 
@@ -245,5 +270,3 @@ data3 <- read_xlsx(here("data", "data3.xlsx"))
 
 ```
 
-b. inspect them to see if you can tell what is wrong, and
-c. without directly editing the file, try to read them in properly.

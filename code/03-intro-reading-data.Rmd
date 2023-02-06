@@ -262,11 +262,25 @@ data2_fix2 <- read_csv(here("data","data2.csv"), col_names = c("x", "y", "z"))
 ```
 
 ```{r}
-# import data 3, to do this we first have to add in the readxl package
+# import data 3, to do this we first have to add in the readxl package, you can also do this by using readxl::read_excel()
 library(readxl)
 
+data3 <- read_excel(here("data", "data3.xlsx"))
 
-data3 <- read_xlsx(here("data", "data3.xlsx"))
+```
+Upon investigation of this data, the actual data does not start until the second line.  To fix the data upon import, we are going to use the `skip = ` function to skip the first line
 
+```{r}
+# skip the first line
+data3 <- read_excel(here("data", "data3.xlsx"),
+                    skip = 2,
+                    col_names = FALSE
+                    )
+
+# last (and hopefully correct) attempt.  A lot of people will include a summary box but sometimes it will read in a blank.  We are going to try and get the data to skip this blank stuff and get rid of the total at the bottom, this can be done with "n_max"
+data3 <- read_excel(here("data", "data3.xlsx"),
+                    skip = 1,
+                    n_max = 16
+                    )
 ```
 

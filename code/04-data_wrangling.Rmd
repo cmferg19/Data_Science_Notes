@@ -31,7 +31,8 @@ To begin, let's make sure that our data set and the `dplyr` package are loaded
 ```{r message=FALSE, warning=FALSE}
 library(readr)
 library(dplyr)
-colleges <- read_csv("data/colleges2015.csv")
+library(here)
+colleges <- read_csv(here("data","colleges2015.csv"))
 
 ```
 
@@ -102,6 +103,10 @@ To extract the rows only for colleges and universities in a specific state we us
 
 ```{r}
 ny <- filter(colleges, state == "NY")
+head(ny)
+
+# same command but now using piping
+ny <- colleges %>% filter(state == "NY")
 head(ny)
 ```
 

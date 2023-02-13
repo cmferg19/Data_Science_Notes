@@ -118,7 +118,10 @@ head(ny)
 * **To specify multiple tests**, use a comma to separate the tests (think of the comma as the word "and"). You can also use the `&` if you prefer. For example,
 
 ```
+# when filtering for multiple things, you can just list them seperated by commas or use the & symbol
 smallNY <- filter(colleges, state == "NY", undergrads < 2000)
+
+small NY <- filter(colleges, state == "NY" & undergrads <2000)
 ```
 
 returns only those rows corresponding to schools in Wisconsin with fewer than 2,000 undergraduate students.
@@ -126,11 +129,12 @@ returns only those rows corresponding to schools in Wisconsin with fewer than 2,
 * To specify that <u>at least one</u> test must be passed, use the `|` character (aka "or") instead of the comma. For example, the below test checks whether a college is in New York or Minnesota or Iowa, so it returns all of the colleges in New York, Minnesota, and Iowa.
 
 ```
-NyMnIa <- filter(colleges, state == "NY" | state == "MN" | state == "IA")
+NyMnIa <- filter(colleges, (state == "NY") | (state == "MN") | (state == "IA"))
 ```
 Alternatively, when dealing with a longer list of choices within the same variable, you can use the `%in%` command. While slightly more "R specific", this is a far better approach to take when you can multiple "or" conditions on the same variable to keep track of.
 
 ```{r}
+# another way to say "or" without the vertical line.  If you are not incorporating different variables, this is a good way to do it
 NyMnIa <- filter(colleges, state %in% c("NY", "MN", "IA") )
 ```
 
@@ -163,9 +167,27 @@ will eliminate only rows with `NA` in the cost column.
 
 1) Construct a data set with only Vermont colleges? (The abbreviation for Vermont is VT.) Feel free to try out piping if you'd like.
 
+```{r}
+# make a dataset with only VT colleges
+VT_colleges <- filter(colleges, state == "VT")
+```
+
+
 2) Construct a data set containing private Vermont colleges with at least 1000 undergraduates.
+```{r}
+# make data set with private VT colleges with at least 1000 undergrads
+VT_priv <- colleges %>%
+  filter(state == "VT", 
+         type == "private", 
+         undergrads >= 1000)
+```
 
 3) Construct a data set containing all private Vermont colleges or public colleges with fewer than 2000 undergraduates.
+```{r}
+# construct data set with all private VT colleges or public colleges with < 2000 undergrads
+VT_2000 <- colleges %>%
+  filter(((state == "VT")&(type == "private")) | ((state == "VT")&(type == "private")&(undergrads <2000)))
+```
 
 ### 2. Slicing rows
 
@@ -184,8 +206,8 @@ slice(colleges, 10:16)
 
 #### Exercises
 
-4) How do you decide between using `filter` and `slice` for subseting rows?
-
+4) How do you decide between using `filter` and `slice` for subsetting rows?
+If you have a specific number of rows (like the first 10), then in makes sense to use `slice`.  Otherwise, if you are trying to pick out rows using a variable type or something like that, it is better to use `filter`.
 
 ### 3. Arranging rows
 
@@ -218,12 +240,49 @@ reorders **colleges** first by the median ACT math score (in descending order) a
 #### Exercises
 
 5) What school is most expensive? 
+```{r}
+# arrange the schools by cost
+colleges %>% 
+  arrange(colleges, desc(cost)) %>%
+  slice(1)
+
+# another method if there are ties
+colleges %>%
+  slice_max(order_by = cost, n = 1)
+```
+Based on this, the most expensive school is Sarah Lawrence College.
 
 6) What school has the least expensive tuition in Wyoming (WY)?
+```{r}
+# arrange the schools by cost in WY
+colleges %>% 
+  filter(state == "WY") %>%
+  arrange(cost)
+
+# another way to do this without using arrange
+colleges %>%
+  filter(state == "WY") %>%
+  slice_min(order_by = cost, n = 1)
+```
+The school with the least expensive tuition in Wyoming is the University of Wyoming
 
 7) Suppose we wanted to find the ten most expensive schools and store the result as a new object.
+```{r}
+# find the 10 most expensive schools
+top_10_cost <- colleges %>%
+  arrange(desc(cost)) %>%
+  slice(1:10)
+```
+
 
 8) Which school has the most expensive tuition in New York?
+```{r}
+# arrange the schools by cost in NY
+costNY <- colleges %>% 
+  filter(state == "NY") %>%
+  arrange(desc(cost))
+```
+The most expensive school in New York is Sarah Lawrence College.
 
 ### 4. Selecting columns
 
@@ -381,10 +440,25 @@ colleges_by_state
 ### 8. Additional Exercises
 
 12. Filter the rows for colleges in Great Lakes or New England regions.
+```{r}
+# filter the rows for colleges in the great lake or new England regions
+GL_NE_colleges <- colleges %>%
+  filter(region == "New England" | region == "Great Lakes")
+```
 
 13. Which school in Great Lakes or New England region has the highest first-year retention rate in this reduced data set.
+```{r}
+# figure out which school has the highest first year retention rate
+GL_NE_colleges %>% arrange(desc(FYretention))
+```
+Sacred Heart Major Seminary school in Detroit and Yeshiva Gedolah of Greater Detroit in Oak Park are tied for the highest first year retention rate of 100%.
 
 14. Which school in Great Lakes or New England region has the lowest admissions rate in this reduced data set.
+```{r}
+# figure out which school has the lowest admissions rate
+GL_NE_colleges %>% arrange(admissionRate) %>% slice(1)
+```
+Harvard has the lowest admission rate out of all of these colleges and/or universities. 
 
 15. Using the full data set, create a column giving the cumulative average cost of attendance, assuming that students finish in four years and that costs increase 3% per year. Name this new column `total_cost_4yrs`.
 

@@ -17,12 +17,38 @@ We will be using data from the (im)famous first day survey administered each sem
 We will be using data from the Fall 2021 class. It can be found in the file `Stat113Fall2021.csv` which is located in the data subdirectory of the notes folder.
 
 1. Load the appropriate packages.
+```{r}
+# clear the environment
+rm(list = ls())
+
+# load in the packages we will need
+library(dplyr)
+library(here)
+library(ggplot2)
+library(readr)
+```
 
 
 2. Read in the Stat 113 data.
+```{r}
+stat113 <- read_csv(here("data", "Stat113Fall2021.csv"))
+```
 
 
 3. Find the number of students, mean GPA, the proportion of students that did not submit GPAs, and the number of first year students in each section. Use piping. Store the result. Print the result to the console.
+```{r}
+stat113 %>% 
+  # identify first year students
+  mutate(FirstYear = ifelse(Year == 1, TRUE, FALSE)) %>%
+  
+  
+  group_by(Class) %>%
+    summarise(n_students = n(),
+            meanGPA = mean(GPA, na.rm = TRUE),
+            PropNoGPA = (sum(is.na(GPA)))/n_students,
+            n_firstyears = sum(FirstYear, na.rm = TRUE)
+            )
+```
 
     
 4. Construct a dataset that contains only the GPAs of the students, their class year, and their section. Keep only those that have a valid GPA.

@@ -310,6 +310,13 @@ Data sets often do not contain the exact variables we need, but contain all of t
 
 ```{r}
 colleges <- mutate(colleges, admissionPct = 100 * admissionRate)
+
+# can move new variable to the front using relocate (might be useful if printing/knitting a tibble)
+
+colleges <- colleges %>% 
+  mutate(admissionPct = 100 * admissionRate) %>%
+  relocate(admissionPct)
+
 ```
 
 **Remarks**
@@ -318,8 +325,11 @@ colleges <- mutate(colleges, admissionPct = 100 * admissionRate)
 * **To add multiple variables once**, separate the list of new variables by commas. For example, we can also add percentage versions of `FYretention` and `gradRate`.
 
 ```{r}
+# if you have multiple variables that you are trying to mutate, you can put those in the same mutate argument and just separate them with commas.  As long as the variables are in the correct order, you can also mutate with a variable that you mutated earlier in the mutate argument. 
+
 colleges <- mutate(colleges, FYretentionPct = 100 * FYretention,
-                   gradPct = 100 * gradRate)
+                   gradPct = 100 * gradRate,
+                   dropPct = 100 - gradPct)
 ```
 
 
@@ -328,6 +338,8 @@ colleges <- mutate(colleges, FYretentionPct = 100 * FYretention,
 To create summary statistics for columns within the data set we must aggregate all of the rows using the `summarize` command. (Note that you can also use the British spelling: `summarise`.) For example, to calculate the median cost of all `r nrow(colleges)` colleges in our data set we run the following command:
 
 ```{r}
+# the na.rm = TRUE tells R how to deal with the missing variables, this causes it to remove them and essentially ignore them. 
+
 summarize(colleges, medianCost = median(cost, na.rm = TRUE))
 ```
 
@@ -339,6 +351,7 @@ summarize(colleges, medianCost = median(cost, na.rm = TRUE))
 * We can ask for multiple aggregations in one line of code by simply using a comma separated list. For example, we can calculate the five number summary of `cost` for all `r nrow(colleges)` colleges in our data set
 
 ```{r}
+# manual way to calculate summary statistics. This generates a tibble with variable names for each summary statistic
 summarize(colleges, 
           min = min(cost, na.rm = TRUE), 
           Q1 = quantile(cost, .25, na.rm = TRUE), 
@@ -352,8 +365,10 @@ summarize(colleges,
 It is worth noting that some summary statistics (e.g., the five number summary) can be calculated in `dplyr` in other ways. For example, 
 
 ```{r}
+# another option is to use the built in quantile function through dplyr
 summarize(colleges,
-          quantile_statistic = quantile(x = cost, probs = seq(0, 1, 0.25), na.rm = TRUE), q = seq(0, 1, 0.25)         )
+          quantile_statistic = 
+            quantile(x = cost, probs = seq(0, 1, 0.25), na.rm = TRUE), q = seq(0, 1, 0.25)         )
 ```
 
 However, it is my opinion that this is more complex for those just learning `dplyr`.
@@ -361,7 +376,7 @@ However, it is my opinion that this is more complex for those just learning `dpl
 #### Exercises
 
 9) What happens if we remove `na.rm = TRUE` from the code above?
-
+The NA's that are in the data set will interfere with R's ability to run the code so it will output an error with NA.  You need to tell it to ignore the Na's
 
 ### 7. Groupwise manipulation
 
@@ -370,6 +385,7 @@ Often it is of interest to manipulate data within groups. For example, we might 
 Let's first consider comparing the cost of private and public colleges. First, we must specify that the variable `type` defines the groups of interest.
 
 ```{r}
+# group_by defines a way you want to organize how R will parse through data.  This will group the colleges data by type - private and public
 colleges_by_type <- group_by(colleges, type)
 ```
 
@@ -403,6 +419,11 @@ Will only have groups based on the type of college, not the state.
 
 10) Verify the first two statements by (a) printing both `colleges` and `colleges_by_type` to the console and (b) investigating each in the Environment panel.
 
+```{r}
+colleges
+colleges_by_type
+```
+
 11) Verify the last two statements by running the code provided in them.
 
 
@@ -424,6 +445,7 @@ colleges %>%
 We can also calculate new variables within groups, such as the standardized cost of attendance within each state:
 
 ```{r}
+# you can also use group_by with mutate to calculate summary statistics based on a specific group
 colleges_by_state <- group_by(colleges, state) %>%
                       mutate( 
                             mean.cost = mean(cost, na.rm = TRUE), 

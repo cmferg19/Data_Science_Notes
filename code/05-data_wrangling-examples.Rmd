@@ -1,0 +1,55 @@
+---
+output:
+  html_document:
+    df_print: paged
+---
+
+# Data Wrangling Examples
+
+## Introduction
+
+We will gain practice in data wrangling in R.
+
+## Overview of Data
+
+We will be using data from the (im)famous first day survey administered each semester in Stat 113. To familiarize ourselves with the data, check out the form [here](http://it.stlawu.edu/~rlock/stat113/firstsurvey.htm){target=".blank"}.
+
+We will be using data from the Fall 2021 class. It can be found in the file `Stat113Fall2021.csv` which is located in the data subdirectory of the notes folder.
+
+1. Load the appropriate packages.
+
+
+2. Read in the Stat 113 data.
+
+
+3. Find the number of students, mean GPA, the proportion of students that did not submit GPAs, and the number of first year students in each section. Use piping. Store the result. Print the result to the console.
+
+    
+4. Construct a dataset that contains only the GPAs of the students, their class year, and their section. Keep only those that have a valid GPA.
+
+
+5. Construct a dataset that contains only the social media related variables. Tip: Check out the "helper" section of the `dplyr` cheat sheet for a useful shortcut when selecting variables with similar names.
+
+
+6. Using the previous dataset, for those that have a Twitter account, construct a table containing number of people in each "Favorite Social Media" category and the average number of Facebook friends. Sort the resulting table by the amount of Facebook friends (from largest to smallest).
+
+
+7. Instead of considering only those with Twitter accounts, construct a table similar to the previous part, but including lines for those with and without Twitter.
+
+8. Construct a dataset that contains the students with the top 10 most number of piercings. Keep only the number of piercings and the gender of the student.
+
+9. Count how many students are missing both their height and weight values.
+
+10. Count how many students are missing at least one of their height and weight values.
+
+11. Calculate BMI for students. Create a new object called statBMI to store this new variable along with the other the results. Be sure to retain missing values for the students that didn't provide the necessary information. (Tip: When looking up the formula for BMI, recall that the units for height and weight in this data is inches and pounds, respectively.)
+    
+12. Keep only columns of BMI and sport question. Call this new object sportBMI.
+    
+13. Keep only rows where people answered the sport question and replace sportBMI with this cleaned data.
+
+14. Now, we will redo the previous three parts as one long string of piped commands. Do so by starting with the initial data set.
+        
+15. Compare BMI for athletes vs non-athletes. Do so using numerical summary statistics that you learned about in Stat 113.
+
+16. Assuming that the Stat 113 students in this data represent a random (or at least representative) sample of SLU students, is there a statistically significant difference in average BMI values between athletes and non-athletes?

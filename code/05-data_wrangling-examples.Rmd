@@ -37,41 +37,149 @@ stat113 <- read_csv(here("data", "Stat113Fall2021.csv"))
 
 3. Find the number of students, mean GPA, the proportion of students that did not submit GPAs, and the number of first year students in each section. Use piping. Store the result. Print the result to the console.
 ```{r}
-stat113 %>% 
-  # identify first year students
-  mutate(FirstYear = ifelse(Year == 1, TRUE, FALSE)) %>%
+stat113_GPAs_by_section <-
+  stat113 %>% 
+    # identify first year students
+    mutate(FirstYear = ifelse(Year == 1, TRUE, FALSE)) %>%
+    
+    
+    group_by(Class) %>%
+      summarise(n_students = n(),
+              meanGPA = mean(GPA, na.rm = TRUE),
+              PropNoGPA = (sum(is.na(GPA)))/n_students,
+              n_firstyears = sum(FirstYear, na.rm = TRUE)
+              )
   
   
-  group_by(Class) %>%
-    summarise(n_students = n(),
-            meanGPA = mean(GPA, na.rm = TRUE),
-            PropNoGPA = (sum(is.na(GPA)))/n_students,
-            n_firstyears = sum(FirstYear, na.rm = TRUE)
-            )
+  # Another way to do this:
+  stat113 %>% 
+    # identify first year students
+    mutate(FirstYear = ifelse(Year == 1, TRUE, FALSE),
+    missingGPA = is.na(GPA)) %>% # counts up the observations with a missing GPA 
+    
+    group_by(Class) %>%
+      summarise(n_students = n(),
+              meanGPA = mean(GPA, na.rm = TRUE),
+              PropNoGPA = (sum(is.na(GPA)))/n_students,
+              prop_missingGPA = mean(missingGPA), # proportion of students who did not submit GPAs
+              n_firstyears = sum(FirstYear, na.rm = TRUE)
+              )
 ```
 
     
 4. Construct a dataset that contains only the GPAs of the students, their class year, and their section. Keep only those that have a valid GPA.
+```{r}
+stat113_subset1 <-
+  stat113 %>% 
+    filter(!is.na(GPA), between (GPA, 0,4)) %>%
+    select(GPA, Class, Year)
+
+# another way to drop the na is to use tidyr::drop_na()
+
+stat113_subset1
+  
+```
+
 
 
 5. Construct a dataset that contains only the social media related variables. Tip: Check out the "helper" section of the `dplyr` cheat sheet for a useful shortcut when selecting variables with similar names.
+```{r}
+stat113_subset2 <-
+  stat113 %>%
+    select(, contains("SocialMedia"))
+
+stat113_subset2
+```
 
 
 6. Using the previous dataset, for those that have a Twitter account, construct a table containing number of people in each "Favorite Social Media" category and the average number of Facebook friends. Sort the resulting table by the amount of Facebook friends (from largest to smallest).
+```{r}
+stat113_subset3 <-
+stat113_subset2 %>%
+  # filter down to isolate the people with Twitter accounts
+  filter(SocialMedia_Twitter == "Yes") %>%
+  
+  #construct a table containing the number of people in each favorite social media category and the average number of facebook friends
+  group_by(SocialMedia_Favorite) %>%
+    summarise(Total = n(),
+              meanFacebookFriends = (mean(SocialMedia_Facebook, na.rm = TRUE))) %>%
+  
+   #sort this from largest to smallest by the number of facebook friends
+  arrange(desc(meanFacebookFriends))
+
+stat113_subset3
+  
+```
 
 
 7. Instead of considering only those with Twitter accounts, construct a table similar to the previous part, but including lines for those with and without Twitter.
+```{r}
+stat113_subset4 <- 
+  
+stat113_socialmedia %>%
+  
+  #construct a table containing the number of people in each favorite social media category and the average number of facebook friends
+  group_by(SocialMedia_Twitter, SocialMedia_Favorite) %>%
+    summarise(Total = n(),
+              meanFacebookFriends = (mean(SocialMedia_Facebook, na.rm = TRUE))) %>%
+  
+   #sort this from largest to smallest by the number of facebook friends
+  arrange(desc(meanFacebookFriends))
+  
+stat113_subset4
+```
 
 8. Construct a dataset that contains the students with the top 10 most number of piercings. Keep only the number of piercings and the gender of the student.
+```{r}
+stat113_subset5 <-
+stat113 %>%
+  select(Pierces, Gender) %>%
+  arrange(desc(Pierces)) %>%
+  slice(1:10)
+
+stat113_subset5
+```
 
 9. Count how many students are missing both their height and weight values.
+```{r}
+stat113_subset6 <-
+  stat113 %>%
+      summarise(missing_hgt = sum(is.na(Hgt)),
+                missing_wgt = sum(is.na(Wgt)),
+                missing_wgt_hgt = sum(is.na(Hgt) & is.na(Wgt)))
+
+stat113_subset6
+```
 
 10. Count how many students are missing at least one of their height and weight values.
+```{r}
+stat113_subset6 <-
+  stat113 %>%
+      summarise(missing_hgt = sum(is.na(Hgt)),
+                missing_wgt = sum(is.na(Wgt)),
+                missing_wgt_hgt = sum(is.na(Hgt) & is.na(Wgt)))
+
+stat113_subset6
+```
 
 11. Calculate BMI for students. Create a new object called statBMI to store this new variable along with the other the results. Be sure to retain missing values for the students that didn't provide the necessary information. (Tip: When looking up the formula for BMI, recall that the units for height and weight in this data is inches and pounds, respectively.)
+```{r}
+stat113 <- 
+stat113 %>%
+    mutate(statBMI = Wgt/(Hgt*Hgt) * 703)
+
+stat113
+```
+
     
 12. Keep only columns of BMI and sport question. Call this new object sportBMI.
-    
+```{r}
+sportBMI <-
+  stat113 %>%
+  select(statBMI, Sport)
+sportBMI
+```
+
 13. Keep only rows where people answered the sport question and replace sportBMI with this cleaned data.
 
 14. Now, we will redo the previous three parts as one long string of piped commands. Do so by starting with the initial data set.

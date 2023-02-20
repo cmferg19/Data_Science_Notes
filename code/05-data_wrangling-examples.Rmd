@@ -101,7 +101,7 @@ stat113_subset2 %>%
   
   #construct a table containing the number of people in each favorite social media category and the average number of facebook friends
   group_by(SocialMedia_Favorite) %>%
-    summarise(Total = n(),
+    summarise(n_people = n(),
               meanFacebookFriends = (mean(SocialMedia_Facebook, na.rm = TRUE))) %>%
   
    #sort this from largest to smallest by the number of facebook friends
@@ -116,8 +116,9 @@ stat113_subset3
 ```{r}
 stat113_subset4 <- 
   
-stat113_socialmedia %>%
-  
+stat113 %>%
+  # remove missing twitter
+  filter(!is.na(SocialMedia_Twitter)) %>%
   #construct a table containing the number of people in each favorite social media category and the average number of facebook friends
   group_by(SocialMedia_Twitter, SocialMedia_Favorite) %>%
     summarise(Total = n(),
@@ -127,6 +128,9 @@ stat113_socialmedia %>%
   arrange(desc(meanFacebookFriends))
   
 stat113_subset4
+
+
+# another way to drop the na values: tidyr::drop_na(SocialMedia_Twitter, other columns, or if you leave it  blank it will drop all of the na's)
 ```
 
 8. Construct a dataset that contains the students with the top 10 most number of piercings. Keep only the number of piercings and the gender of the student.
@@ -134,11 +138,17 @@ stat113_subset4
 stat113_subset5 <-
 stat113 %>%
   select(Pierces, Gender) %>%
-  arrange(desc(Pierces)) %>%
-  slice(1:10)
+  slice_max(Pierces, n=10)
 
 stat113_subset5
 ```
+8.5. Construct a dataset that contains the students with the top 10 percent most number of piercings. Keep only the number of piercings and the gender of the student.
+```{r}
+stat113 %>%
+  select(Pierces, Gender) %>%
+  slice_max(Pierces, prop=0.1)
+```
+
 
 9. Count how many students are missing both their height and weight values.
 ```{r}
@@ -181,9 +191,34 @@ sportBMI
 ```
 
 13. Keep only rows where people answered the sport question and replace sportBMI with this cleaned data.
+```{r}
+sportBMI <-
+  sportBMI %>%
+  filter(!is.na(Sport), !is.na(statBMI))
+sportBMI
+```
+
 
 14. Now, we will redo the previous three parts as one long string of piped commands. Do so by starting with the initial data set.
+```{r}
+stat113 %>%
+  mutate(statBMI = Wgt/(Hgt*Hgt) * 703) %>%
+  select(statBMI, Sport) %>%
+  filter(!is.na(Sport), !is.na(statBMI))
+```
+
         
 15. Compare BMI for athletes vs non-athletes. Do so using numerical summary statistics that you learned about in Stat 113.
+```{r}
+# run a two sample t test to compare the BMI values for the athletes vs the non-athletes
+sport_t.test <-
+  sportBMI %>%
+  with(t.test(statBMI~Sport))
+  
+sport_t.test
+```
+
 
 16. Assuming that the Stat 113 students in this data represent a random (or at least representative) sample of SLU students, is there a statistically significant difference in average BMI values between athletes and non-athletes?
+
+Based on this analysis, there is not a statistically significant difference in average BMI values between athletes and non-athletes. 

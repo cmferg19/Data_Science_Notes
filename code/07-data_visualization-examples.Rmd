@@ -1,0 +1,180 @@
+---
+title: "Examples with ggplot2"
+output: html_document
+---
+
+# Brief overview of `ggplots2` package
+
+All `ggplot` functions must have at least three components:
+
+*  **data frame**: data associated with the plot. 
+*  **geom**: to determine the type of geometric shape used to display the data, such as line, bar, point, or area. Note that you can use different data in different geoms by 
+*  **aes**: to determine how variables in the data are _mapped_ to visual properties (aesthetics) of geoms. This can include x position, y position, color, shape, fill, and size.
+  + If the `aes` statement is included in the `ggplot` command, the mapping will be available to any `geom`s used
+  + If you need a variable mapped to just a specific `geom`, you can include it in an `aes` mapping for a specific geom. (You can also do something similar with the `data` option if you need to plot multiple data sources on the same display. However, it is generally better to think about structuring your dataset )
+
+# Practice Problems with ggplots2
+
+For this set of exercises we will be using a slightly larger version of the Stat 113 first day survey data. It is in the file `stat113_f18_s19.csv` (and contains two semesters of surveys).
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(here)
+library(readr)
+
+stat113 <- read_csv(here("data", "stat113_f18_s19.csv"))
+```
+
+## Univariate Analyses
+
+We will begin with a series of basic displays for univariate analyses.
+
+* Investigate the distribution of the amount of TV watched (in hours per week) by Stat 113 students.
+```{r}
+base_plot <- ggplot(stat113, mapping = aes(x = TV))
+
+```
+
+* Use another display to investigate the distribution of the amount of TV watched (in hours per week) by Stat 113 students.
+```{r}
+base_plot+
+     geom_density(color = "blue",
+                  fill = "red",
+                  alpha = 0.5)
+```
+
+* Combine the geoms from the previous part onto the same plot.
+```{r}
+# not working because the density and histogram scales are different
+base_plot + geom_histogram() + geom_density(
+     color = "blue")
+```
+
+```{r}
+# force the histogram to be on the density scale
+base_plot + 
+     geom_histogram(aes(y = after_stat(density)))+
+     geom_density()
+```
+
+```{r}
+# force the density to be on the count scale
+base_plot +
+     geom_histogram(bins = 50)+
+     geom_density(aes(y = after_stat(count)))
+```
+
+
+
+* Pick your favorite chart of the three and play around with a few options such as color, fill, linetype, and alpha. 
+
+
+
+* Pick another numeric variable to explore. Play around with themes, coordinate systems, and labels.
+```{r}
+ggplot(data = stat113, aes(Exercise))+
+     geom_density(fill = "dodger blue",
+                  alpha = 0.25,
+                  )+
+     theme_bw()+ 
+     coord_flip()+
+     labs(caption = "Figure 1: Distribution of ...",
+          x = "Exercise per week (hours)")
+
+#coord_polar is a way to plot circular data (ex: wind direction, time, etc.)
+     
+```
+
+
+* Pick a categorical variable and make a bar chart.
+```{r}
+award_plot <-
+stat113 %>%
+     filter(!is.na(Award)) %>%
+     ggplot(aes(x = Award, fill = Award))+
+     geom_bar()
+```
+
+```{r}
+# saving plots
+ggsave(filename = "stat113_award_plot.jpg",
+       plot = award_plot,
+       width = 7,
+       height = 4)
+```
+
+## Multivariate Analyses
+
+We will investigate a few research questions involving two variables and produce graphics of the following. (Note: You may need to use different sets of variables for some of them.)
+
+* Side-by-side boxplots and/or violin plots
+```{r}
+# make side-by-side boxplots
+stat113%>% 
+  filter(!is.na(Sport)) %>%
+  ggplot(aes(x = Sport, 
+             y = GPA, 
+             fill = Sport))+
+  geom_violin()+
+  scale_fill_manual(
+    values = c("skyblue", "royalblue"),
+    name = "Student\nAthlete" # \n is used to insert a line break in text
+  ) +
+  labs(title = "title of plot",
+       caption = "caption of plot")+
+  coord_cartesian(ylim = c(0,4.1), expand = FALSE) # NA can also be used to define the upper bound based on how big the data gets
+```
+
+* Scatterplot
+```{r}
+# create a scatter plot 
+stat113 %>%
+  ggplot(aes(x = Exercise, y= Pulse ))+
+  geom_point()
+```
+
+* Scatterplot + Smoother
+```{r}
+# create a scatter plot 
+stat113 %>%
+  ggplot(aes(x = Exercise, y= Pulse ))+
+  geom_point()+
+  geom_smooth()
+```
+* Scatterplot + Linear Smoother
+```{r}
+# create a scatter plot 
+stat113 %>%
+  ggplot(aes(x = Exercise, y= Pulse ))+
+  geom_point()+
+  geom_smooth(method = lm)
+```
+```{r}
+# create a scatter plot 
+stat113 %>%
+  ggplot(aes(x = TV, y= GPA, color = Tattoo))+
+  geom_point()+
+  geom_smooth()+
+  geom_smooth(method = lm)
+```
+
+* Stacked Bar Chart
+```{r}
+stat113 %>%
+  ggplot(aes(x = Computer))+
+  geom_bar(position = "stack")
+```
+
+* Faceted Density plots
+
+After getting a "basic plot" constructed for each, investigate options to customize and "clean up" the plots. Try to make them look nice.
+
+
+* Recreate "example.png" (from the T drive)
+
+* Use Class as a factor (categorical variable) instead of a numerical variable
+
+## Further Practice
+
+The document `06-data_visualization` contains more detailed notes related to the grammar of graphics (using `ggplots2`). Please note that a set of Exercises will have you working through those from that document. You might as well get started on them early.

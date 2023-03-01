@@ -177,7 +177,7 @@ stat113_subset6
 stat113 <- 
 stat113 %>%
     mutate(statBMI = Wgt/(Hgt*Hgt) * 703)
-
+  
 stat113
 ```
 
@@ -210,6 +210,32 @@ stat113 %>%
         
 15. Compare BMI for athletes vs non-athletes. Do so using numerical summary statistics that you learned about in Stat 113.
 ```{r}
+# numerical summary statistics
+sportBMI_summary <- 
+  sportBMI %>%
+  group_by(Sport) %>%
+    summarise(
+      # sample number
+      n = n(),
+      # 5 number summary
+      min = min(statBMI),
+      q1 = quantile(statBMI, prob = 0.25),
+      med = median(statBMI),
+      q3 = quantile(statBMI, prob = 0.75),
+      max = max(statBMI),
+      # mean, stdev
+      mean = mean(statBMI),
+      stdev = sd(statBMI)
+      
+    )
+sportBMI_summary
+
+```
+
+
+16. Assuming that the Stat 113 students in this data represent a random (or at least representative) sample of SLU students, is there a statistically significant difference in average BMI values between athletes and non-athletes?
+
+```{r}
 # run a two sample t test to compare the BMI values for the athletes vs the non-athletes
 sport_t.test <-
   sportBMI %>%
@@ -217,8 +243,5 @@ sport_t.test <-
   
 sport_t.test
 ```
-
-
-16. Assuming that the Stat 113 students in this data represent a random (or at least representative) sample of SLU students, is there a statistically significant difference in average BMI values between athletes and non-athletes?
 
 Based on this analysis, there is not a statistically significant difference in average BMI values between athletes and non-athletes. 

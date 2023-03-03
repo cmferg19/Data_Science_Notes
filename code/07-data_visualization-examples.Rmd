@@ -153,20 +153,61 @@ stat113 %>%
 ```{r}
 # create a scatter plot 
 stat113 %>%
-  ggplot(aes(x = TV, y= GPA, color = Tattoo))+
+  filter(!is.na(Tattoo)) %>%
+  ggplot(aes(x = TV, y= GPA, 
+             color = Tattoo, fill = Tattoo, shape = Tattoo))+
   geom_point()+
   geom_smooth()+
-  geom_smooth(method = lm)
+  geom_smooth(method = lm) +
+  facet_wrap(vars(Tattoo), scales = "free") +
+  theme_bw()
+
+# standard errors are controlled by the fill command
 ```
 
 * Stacked Bar Chart
 ```{r}
 stat113 %>%
-  ggplot(aes(x = Computer))+
+  filter(!is.na(Award), !is.na(Sport)) %>%
+  ggplot(aes(x = Award, fill = Sport))+
   geom_bar(position = "stack")
 ```
 
+```{r}
+# cluster bar chart
+stat113 %>%
+  filter(!is.na(Award), !is.na(Sport)) %>%
+  ggplot(aes(x = Award, fill = Sport))+
+  geom_bar(position = "dodge")
+```
+```{r}
+# filled bar chart, changes the y-axis to be a proportion
+stat113 %>%
+  filter(!is.na(Award), !is.na(Sport)) %>%
+  ggplot(aes(x = Sport, fill = Award))+
+  geom_bar(position = "fill")+
+  labs(y= "Proportion") +
+  scale_fill_viridis_d() +
+  #scale_fill_brewer(palette = "Accent")+
+  theme_bw()
+```
 * Faceted Density plots
+```{r}
+stat113 %>%
+  ggplot(aes(x = Class, y = GPA, group = Class)) +
+  
+  geom_violin(aes(fill = Class))+
+  
+ 
+  geom_boxplot()+
+  
+  facet_wrap(vars(Term))+
+  
+  theme_bw() +
+  coord_cartesian(ylim = c(0,4.1), expand = FALSE)+
+  labs(x = "Stat 113 Section")
+
+```
 
 After getting a "basic plot" constructed for each, investigate options to customize and "clean up" the plots. Try to make them look nice.
 

@@ -18,6 +18,8 @@ All `ggplot` functions must have at least three components:
 For this set of exercises we will be using a slightly larger version of the Stat 113 first day survey data. It is in the file `stat113_f18_s19.csv` (and contains two semesters of surveys).
 
 ```{r}
+rm(list = ls())
+
 library(dplyr)
 library(ggplot2)
 library(here)
@@ -193,19 +195,32 @@ stat113 %>%
 ```
 * Faceted Density plots
 ```{r}
+# convert the Class variable into a factor
+stat113 <- stat113 %>%
+            mutate(Class = factor(Class))
+```
+
+```{r}
+
 stat113 %>%
-  ggplot(aes(x = Class, y = GPA, group = Class)) +
+  ggplot(aes(x = Class, y = GPA)) +
   
-  geom_violin(aes(fill = Class))+
+  geom_violin(aes(fill = Class, name = substitute(paste(italic("Stat 113\nSection")))))+
   
+  scale_fill_viridis_d()+
  
-  geom_boxplot()+
+  geom_boxplot(width = 0.3)+
   
   facet_wrap(vars(Term))+
   
   theme_bw() +
   coord_cartesian(ylim = c(0,4.1), expand = FALSE)+
-  labs(x = "Stat 113 Section")
+  
+  labs(x = substitute(paste(italic("Stat 113 Section"))),
+       
+       y = substitute(paste(bold("GPA"))),
+       )
+       
 
 ```
 

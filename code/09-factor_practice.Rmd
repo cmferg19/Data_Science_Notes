@@ -6,15 +6,102 @@ output:
 February 12, 2009 marked the 200th anniversary of Charles Darwin’s birth. Gallup, a national polling organization, surveyed 1018 Americans about their education level and their beliefs about evolution. The results from this survey are in the file `darwin.csv`.
 
   a. Load and necessary packages and read in the data.
-    
+
+```{r}
+rm(list = ls())
+
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(forcats)
+library(here)
+
+darwin <- read_csv(here("data", "darwin.csv"))
+
+```
+
+
   b. Investigate different responses for each variable. One quick way of doing this is to use something like `unique(data_name$variable_name)`.
-    
+  
+```{r}
+# identify the 4 different levels associated with a given variable in the data set
+unique(darwin$Education)
+
+# take output and convert it into a vector:
+dput(unique(darwin$Belief))
+```
+
 Hopefully, you noticed that the variables are ordinal categorical variables. However, the default way R handles factors is to put them in alphabetical order. 
 
   c. Properly order the education level and belief variables. This function works on the variable level (and hence can be done within a `mutate` statement). Try to do this by writing a single chain of piped commands starting with the initial data frame and releveling both factors within the same mutate.
   
+```{r}
+# relevel the education levels based on the order that they should be in
+darwin <- darwin %>%
+  
+  #first convert these variables to factors
+  mutate(Education_fct = factor(Education),
+         Belief_fct = factor(Belief)
+         ) %>%
+  
+  # now reorder them manually using the fct_relevel() function
+         mutate(Education_fct = fct_relevel(Education_fct, c("High School or Less", "Some College", "College Graduate", "Postgraduate")),
+                Belief_fct = fct_relevel(Belief_fct, c("Believe", "Do Not Believe", "No Opinion"))
+         )
+         
+```
+
   d. Use ggplots to make a stacked bar chart where each bar is scaled to 100% (or a proportion of 1 is fine too) to visually investigate the relationship between the two variables. Also, check out the coord_flip() option and clean up the labels as needed.
+```{r}
+darwin %>%
+  ggplot(aes(x = Education_fct, fill = Belief_fct))+
+  geom_bar(position = "fill")+
+  coord_flip()+
+  theme_bw() +
+  labs(x = "Education Level", y = "Proportion", fill = "Belief")
+  
+```
+  
     
   e. Use the group_by statement (and any other necessary commands) to get the counts for each Education/Belief combination. 
+```{r}
+darwin_summary <-
+  darwin %>%
+    group_by(Education_fct, Belief_fct)%>%
+    summarize(n_observations = n())
+
+```
   
   f. Use the table from part (e) (not the full dataset) to create a grouped (or clustered) bar chart to investigate the relationship between the Education and Belief.
+```{r}
+# you can use the fct_rev() function to reverse the levels of the education groups
+darwin_summary %>%
+  ggplot(aes(x = fct_rev(Education_fct), 
+             fill = Belief_fct,
+             y = n_observations))+
+  geom_col(position = "dodge")+
+  theme_bw() +
+  coord_flip()+
+  labs(x = "Education Level", y = "Observations", fill = "Belief")
+  
+```
+
+  
+Refer back to the Stat 113 first day survey.
+
+```{r}
+stat113 <- read_csv(here("data", "Stat113Fall2021.csv"))
+```
+
+
+Plot the GPA by Class such that the sections are ordered by the median GPA.
+
+```{r}
+stat113 %>%
+  mutate(Class = factor(Class)) %>%
+  filter(!is.na(GPA)) %>%
+  ggplot(aes(x = fct_reorder(Class, GPA, .fun = median)           , 
+             y = GPA)) +
+  geom_boxplot()
+```
+

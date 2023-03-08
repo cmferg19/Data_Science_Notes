@@ -106,6 +106,13 @@ glimpse(airquality$Month_fct)
 
 ```
 
+
+```{r}
+ggplot(airquality, aes(x = Month, y = Temp)) +
+  geom_boxplot(aes(fill = Month)) +
+  labs(title = "Daily Temperatures Aggregated by Month", x = "Month", fill = "Month")
+```
+
 ```{r}
 ggplot(airquality, aes(x = Month_fct, y = Temp)) +
   geom_boxplot(aes(fill = Month_fct)) +
@@ -117,6 +124,7 @@ ggplot(airquality, aes(x = Month_fct, y = Temp)) +
 If you just want to reverse the order, there’s the ``fct_rev`` function. You can even use it in line when defining your aesthetics in ggplot like so:
 
 ```{r}
+# this will create the plot with the factors in reverse order - the fct_rev() function is able to do this pretty easily
 ggplot(airquality, aes(x = fct_rev(Month_fct), y = Temp)) +
   geom_boxplot(aes(fill = Month_fct)) +
   labs(x = "Month", title = "Our plot now has the x-axis in reverse order")
@@ -128,6 +136,7 @@ ggplot(airquality, aes(x = fct_rev(Month_fct), y = Temp)) +
 Another useful function is ``fct_relevel``. This function allows us to change any number of levels to any position.
 
 ```{r}
+# allows you to relevel the factors to put them in a different order
 airquality <-
 	airquality %>%
 		mutate(Month_fct = fct_relevel(Month_fct, 'Sept', 'July', 'May', 'Aug', 'June')
@@ -172,7 +181,12 @@ It’s difficult to make comparisons when the data is scattered. But we’re in 
 ``fct_reorder`` takes three arguments: ``.f`` = factor you want to reorder, ``.x`` = the variable in which the order will be based upon, and optionally ``fun`` (a function to  be used if there are multiple values of ``.x`` for each value of ``.f``.) Here we focus on only the first two arguments.
 
 ```{r}
-ggplot(mtcars, aes(x = mpg, y = fct_reorder(.f = model, .x = mpg))) +
+# this reorders the car models based on their mpg, to reverse the order, you can add in the fct_rev() function
+ggplot(mtcars, aes(x = mpg, 
+                   #option 1: y = fct_reorder(.f = model, .x = mpg) %>% fct_rev()
+                   #option 2: y = fct_reorder(.f = model, .x = -mpg) )
+                   y = fct_reorder(.f = model, .x = mpg, .desc = TRUE) )
+       ) +
   geom_point() +
   labs(y = "model") +
   ggtitle(label = "We can make better comparison by reordering the levels based on the mpg values!") +
@@ -184,7 +198,8 @@ ggplot(mtcars, aes(x = mpg, y = fct_reorder(.f = model, .x = mpg))) +
 The following data contains the results from a small experiment.
 
 ```{r}
-experiment <- readr::read_csv("data/experiment.csv")
+library(here)
+experiment <- readr::read_csv(here("data","experiment.csv"))
 ```
 
 

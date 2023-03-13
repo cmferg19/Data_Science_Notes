@@ -77,7 +77,7 @@ head(UBSprices)
 
 **Exercise**
 1. Explain why this data is not tidy in it's current format
-
+Right now it is in a wider format rather than a long format.  We could seperate this data to have two different columns like the year and the price. 
 
 
 To tidy these data, we need to
@@ -92,7 +92,12 @@ To tidy these data, we need to
 In our example, we want to collapse `rice2003` and `rice2009` into the name-value pair `year` and `price`. To do this, we use the following command:
 
 ```{r}
+tidyUBS <- UBSprices %>%
+  pivot_longer(cols = c("rice2003", "rice2009"), 
+               names_to = "year",
+               values_to = "price")
 
+head(tidyUBS)
 ```
 
 **Remarks**
@@ -106,8 +111,11 @@ In our example, we want to collapse `rice2003` and `rice2009` into the name-valu
 
 2. How are the number of rows adjusted by using the `pivot_longer` command? Use the `dim(UBSprices)` command to determine how many rows are in the **UBSprices** data set and `dim(tidy_ubs)` to determine how many are in the **tidy_ubs** data set).
 
+In this case it is twice as many becuase each place now has 2 entries - one for 2003 and one for 2009.
+
 3. How many rows would there be if used the pivot_longer command and the original **UBSprices** data set had five columns of  years: `rice2003`, `rice2006`, `rice2009`, `rice2012`, and `rice2015`?
 
+For this one, there would be about 270 columns - each place would have 5 entries corresponding to each of the years. 
 
 ## Parsing Functions from the readr package
 
@@ -117,7 +125,12 @@ We now have a data set that we can call tidy.
 
 
 ```{r}
+# parse functions sit at variable level so they will sit inside a mutate function
+tidyUBS <-
+tidyUBS %>%
+  mutate(year = parse_number(year))
 
+tidyUBS
 ```
 
 
@@ -126,7 +139,8 @@ We now have a data set that we can call tidy.
 * This data set started in a relatively tidy form, so it may be difficult to see the benefit of tidying it. Tidy data is typically required for summarizing and plotting data in R. For example, consider making a side-by-side boxplot using `ggplot2`.
 
 ```{r}
-ggplot(data = tidy_ubs, mapping = aes(y = price, x = factor(year)) ) +
+# you can use factor() inside of a ggplot
+ggplot(data = tidyUBS, mapping = aes(y = price, x = factor(year)) ) +
   geom_boxplot() +
   xlab("year")
 ```
@@ -143,6 +157,18 @@ ggplot(data = UBSprices) +
 
 
 * `parse_number` and a few of its related functions from the `readr` package are extremely useful. Be sure to be aware of them. (Also, there are a similar set of `as.*` functions. However, these tend to be used to switch between types of data as opposed to clean data.)
+
+```{r}
+UBSprices %>%
+  pivot_longer(cols = c("rice2003", "rice2009"), 
+               names_to = "year",
+               values_to = "price") %>%
+  mutate(
+    year_as_num = as.numeric(year),
+    year_parse_num = parse_number(year)
+  ) %>%
+  select(year, year_as_num, year_parse_num)
+```
 
 ## Tidying pollster data (`separate + pibot_longer`)</h2>
 
@@ -164,7 +190,15 @@ To break a single <u>character</u> column into multiple new columns we use the `
 To begin, let's break the `Date` column into `begin` and `end` columns:
 
 ```{r}
+polls <- read_csv(here("data","rcp-polls.csv"),na = "--")
 
+tidy_polls <-
+  polls %>%
+  separate(col = Date,
+           into = c('Begin', 'End'),
+           sep = "-")
+
+tidy_polls
 
 ```
 
@@ -178,8 +212,15 @@ To begin, let's break the `Date` column into `begin` and `end` columns:
 We also need to separate the `sample` column into `size` and `population` columns.
 
 ```{r}
+tidy_polls <-
+  tidy_polls %>%
+  separate(col = Sample,
+           into = c("Size", "Population"),
+           sep = " ") %>%
+           #convert = TRUE) %>%
+  mutate(Size = parse_number(Size))
 
-
+tidy_polls
 ```
 
 
@@ -187,7 +228,13 @@ We also need to separate the `sample` column into `size` and `population` column
 Next, we need to `pivot_longer` the last four columns into a `candidate` variable.
 
 ```{r}
-
+tidy_polls <-
+  tidy_polls %>%
+  pivot_longer(cols = c(`Biden (D)`,`Trump (R)`),
+               names_to = "Candidate",
+               values_to = "Votes")
+  
+tidy_polls
 
 ```
 
@@ -198,7 +245,13 @@ Notice that instead of writing out the column names (`Biden (D)`, `Trump (R)`, e
 Finally, we need to `separate` the candidate names from the political party. 
 
 ```{r}
+tidy_polls <-
+  tidy_polls %>%
+  separate(col = Candidate,
+           into = c("Candidate", "Party"),
+           sep = " ")
 
+tidy_polls
 
 ```
 
@@ -213,7 +266,32 @@ In the last command we let R guess which separator to use. This worked, but resu
 Recall that you could put these all together into a single chain of pipes. Here would be an example of doing so.
 
 ```{r}
+tidy_polls_practice <-
+  polls %>%
+  # separate the date values to a begin and end
+  separate(
+    col = Date,
+    into = c("Begin, End"),
+    sep = "-"
+  ) %>%
+  # separate the sample into size and population
+  separate(
+    col = Sample,
+    into = c("Size", "Population"),
+    sep = " ",
+    convert = TRUE
+  ) %>%
+  # combine the candidates into one column with the number of votes they recieved as a seperate column
+  pivot_longer(cols = c(`Biden (D)`,`Trump (R)`),
+               names_to = "Candidate",
+               values_to = "Votes") %>%
+  # seperate the candidate names and the political party they are affiliated with
+  separate(col = Candidate,
+           into = c("Candidate", "Party"),
+           sep = " ")
+  
 
+tidy_polls_practice
 
 
 ```

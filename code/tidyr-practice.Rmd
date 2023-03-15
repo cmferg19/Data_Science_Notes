@@ -1,0 +1,110 @@
+---
+title: "tidyr practice"
+output: html_notebook
+---
+
+# Challenge 1
+```{r}
+# clear the environment
+rm(list = ls())
+
+# import the libraries that we need
+library(dplyr)
+library(tidyr)
+library(readr)
+library(here)
+```
+
+Now let's import the data set that we will need:
+```{r}
+stat113_sp19 <- read_csv(here("data", "stat113_sp19_sections.csv"), name_repair = make.names)
+```
+Now let's tidy this up:
+```{r}
+
+stat113_sp19_tidy <- 
+     # seperate the different variables in the Section.Name.and.Title column
+     stat113_sp19 %>%
+     separate(col =Section.Name.and.Title,
+              into = c("Department", "Course.Number", "Section"),
+              sep = c("-"," ", " ")
+              ) %>%
+     separate(col = Section,
+              into = c("Section", "Title"),
+              sep = " ",
+              extra = "merge"
+              ) %>%
+    
+      # Seperate the semester and year
+     separate(col = Term,
+              into = c("Semester", "Year"),
+              sep = " ", 
+              convert = TRUE
+             ) %>%
+     
+     # Now lets tackle the Meeting.Information column, we need to seperate this into Start.Date, End.Date,         Style, and Days  
+     separate(col = Meeting.Information,
+               into = c("Start.Date", "End.Date"),
+               sep = "-",
+               extra = "merge"
+              )%>%
+     separate(col = End.Date,
+              into = c("End.Date", "Style"),
+              sep = " ",
+              extra = "merge"
+              ) %>%
+     separate(col = Style,
+              into = c("Style", "Days"),
+              sep = " ",
+              extra = "merge"
+              ) %>%
+     separate(col = Days,
+              into = c("Days", "Start.Time"),
+              sep = c(-43),
+              extra = "merge"
+             ) %>%
+     separate(col = Start.Time,
+              into = c("Start.Time", "End.Time"),
+              sep = c("-"),
+              extra = "merge"
+              ) %>%
+     separate(col = End.Time,
+              into = c("End.Time", "Building"),
+              sep = ",",
+              extra = "merge"
+              ) %>%
+     separate(col = Building,
+              into = c("Building", "Room"),
+              sep = ","
+              ) %>%
+     mutate(Room = parse_number(Room)
+            ) %>%
+     separate(col = Available..Capacity,
+              into = c("Available", "Capacity"),
+              sep = "/",
+              convert = TRUE
+              ) %>%
+     select(c(-CEUs, -Location))
+     
+```
+
+# Challenge 2
+```{r}
+# load in the data for challenge number 2
+url = "https://myslu.stlawu.edu/~iramler/data/fall2023_stat_schedule.csv"
+fall_2023 <- read_csv(url)
+```
+Now let's tidy this up:
+```{r}
+# first I will use the separate_rows to transform the data
+fall_2023_tidy <-
+     fall_tidy %>%
+     
+```
+
+
+
+
+
+
+

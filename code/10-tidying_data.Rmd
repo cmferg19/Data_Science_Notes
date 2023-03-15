@@ -284,15 +284,19 @@ tidy_polls_practice <-
   # combine the candidates into one column with the number of votes they recieved as a seperate column
   pivot_longer(cols = c(`Biden (D)`,`Trump (R)`),
                names_to = "Candidate",
-               values_to = "Votes") %>%
+               values_to = "Percent") %>%
   # seperate the candidate names and the political party they are affiliated with
   separate(col = Candidate,
            into = c("Candidate", "Party"),
-           sep = " ")
+           sep = " ") %>%
   
 
 tidy_polls_practice
 
+tidy_polls_practice %>%
+  mutate(year = 2020) %>%
+  unite(begin, year, col = "start", sept = "/", remove = FALSE) %>%
+  unite(end, year, col = "finish", sep = "/")
 
 ```
 
@@ -318,7 +322,8 @@ In this example, a case is best described as an airline in a specific time frame
 First, we `pivot_longer` the last six columns into a common `accidents` column. This will allow us to easily create the `years` column. 
 
 ```{r}
-
+airlines %>%
+  slice_max(fatal_accidents.2000_2014, n = 12)
 
 ```
 

@@ -122,9 +122,27 @@ full_join(x = df1,
 ##### Filtering Joins
 
 * `semi_join()`
+```{r}
+# using the second dataset to subset the first data set based on the rows that match the second data set, will only return the first data set though
+semi_join(x = df1,
+          y = df2,
+          by = c("id_numb" = "id")
+          )
+
+```
 
 
 * `anti_join()`
+```{r}
+# like a filter but a not equals kind of filter
+anti_join(
+  x = df1,
+  y = df2,
+  by = c("id_numb" = "id")
+)
+
+# the only row of df1 (x) that does not have a match in df2 (y)
+```
 
 
 
@@ -137,6 +155,26 @@ full_join(x = df1,
 df_test1a <- tibble(xvar = c(1, 2), yvar = c(5, 1))
 df_test1b <- tibble(x = c(1, 2), y = c(5, 1))
 bind_rows(df_test1a, df_test1b)
+```
+R does not stack the rows because the variable names in df_test1a and df_tes1b are different.  The `bind_rows()` function does not specify how to bind the rows. 
+```{r}
+# rename the column headers in the dataset
+#df_test1a <- df_test1a %>% 
+             # rename(x = xvar, y = yvar)
+
+# bind the two datasets together
+bind_rows("1a" = df_test1a,
+          "1b" = df_test1b,
+          .id = "Dataset")
+
+
+```
+
+Now try again (prior to renaming) using `unite`
+```{r}
+bind_rows(df_test1a, df_test1b) %>%
+  unite(xvar, x, col = "x", sep = "", na.rm = TRUE) %>%
+  unite(yvar, y, col = "y", sep = "", na.rm = TRUE)
 ```
 
 
@@ -160,14 +198,31 @@ head(lifetables)
 You can read about each data set with `?babynames`, `?births` and `?lifetables`.
 
 2. Merge/Join the births data into the babynames data.
+```{r}
+left_join(babynames,
+          births,
+          by = c("year"="year"))
+
+```
 
 3. Merge/Join the babynames data into the births data.
+```{r}
+left_join(births,
+          babynames,
+          by = c("year"="year"))
+```
 
 4. Examine the two joins, and explain why one resulting data set has fewer observations (rows) than the other.
 
+Joining the babynames data into the births data has fewer observations because instead of taking every year of data that is in the babynames (which starts at 1800), the births data starts at 1909 and the `left_join` function is not adding more rows into the births dataset.  Instead it is matching the data from the babynames based on the year that the births data set starts at.
+
 5. Evaluate whether the following statement is true or false: an `inner_join()` will always result in a data set with the same or fewer rows than a `full_join()`.
 
+This is true because the `inner_join()` will only inclue values with matches between the data.  On the other hand, the `full_join()` will include the full data from all of the observations. 
+
 6. Evaluate whether the following statement is true or false: an `inner_join()` will always result in a data set with the same or fewer rows than a `left_join()`.
+
+This is true because depending on how you use the `left_join()` it could only include the matches (thus generating a table with the same number of rows as `inner_join()`), or it could include more observations.  The `inner_join()` will only include the matches. 
 
 
 ## Exercises
@@ -175,8 +230,9 @@ You can read about each data set with `?babynames`, `?births` and `?lifetables`.
 1. Read in the gun violence data set, and suppose that you want to add a row to this data set that has the statistics on gun ownership and mortality rate in the District of Columbia (Washington D.C., which is in the NE region, has 16.7 deaths per 100,000 people, and a gun ownership rate of 8.7%). To do so, create a `tibble()` that has a single row representing D.C. and then combine your new `tibble` with the overall gun violence data set. Name this new data set `all_df`.
 
 ```{r, message = FALSE}
+library(here)
 library(tidyverse)
-mortality_df <- read_csv("data/gun_violence_us.csv")
+mortality_df <- read_csv(here("data","gun_violence_us.csv"))
 ```
 
 ```{r, echo = FALSE, results = "hide"}
@@ -192,8 +248,8 @@ test1 <- tibble(state = "Washington D.C.", mortality_rate = 16.7,
 bind_rows(mortality_df, test1)
 
 test2 <- tibble(state = "Washington D.C.", mortality_rate = 16.7,
-       ownership_rate = 0.087, region = NE)
-bind_rows(mortality_df, test2)
+       ownership_rate = 0.087, region = NE) #there are no quotes around the NE
+bind_rows(mortality_df, test2) #since the previous code did not work, R can't find the test2 df
 
 test3 <- tibble(state = "Washington D.C.", mortality_rate = "16.7",
        ownership_rate = "0.087", region = "NE")

@@ -224,6 +224,18 @@ This is true because the `inner_join()` will only inclue values with matches bet
 
 This is true because depending on how you use the `left_join()` it could only include the matches (thus generating a table with the same number of rows as `inner_join()`), or it could include more observations.  The `inner_join()` will only include the matches. 
 
+```{r}
+x = tibble(x1 = 1, y1 = 10)
+y = tibble(x1 = c(1,1,2,2,3,3),
+           y2 = c(7,8,4,6,7,3))
+
+inner_join(x,y, by = "x1")
+inner_join(y,x, by = "x1")
+
+left_join(x,y, by = "x1")
+left_join(y,x, by = "x1")
+```
+
 
 ## Exercises
 
@@ -244,7 +256,7 @@ dc_df <- tibble(state = "Washington D.C.", mortality_rate = 16.7,
 
 ```{r, error = TRUE, echo = TRUE, results = "hide"}
 test1 <- tibble(state = "Washington D.C.", mortality_rate = 16.7,
-                ownership_rate = 8.7, region = "NE")
+                ownership_rate = 8.7, region = "NE") # the ownership rate is incorrect
 bind_rows(mortality_df, test1)
 
 test2 <- tibble(state = "Washington D.C.", mortality_rate = 16.7,
@@ -253,7 +265,7 @@ bind_rows(mortality_df, test2) #since the previous code did not work, R can't fi
 
 test3 <- tibble(state = "Washington D.C.", mortality_rate = "16.7",
        ownership_rate = "0.087", region = "NE")
-bind_rows(mortality_df, test3)
+bind_rows(mortality_df, test3) # the mortality rate is in quotation marks which makes it a character. R can't add the character to a column of integer data
 ```
 
 3. Examine the following data sets that are in `R`'s base library on demographic statistics about the U.S. states and state abbreviations:
@@ -267,13 +279,41 @@ df2
 
 Combine the two data sets with `bind_cols()`. What are you assuming about the data sets in order to use this function? 
 
+In order to use this as a function, I am assuming that the data in df1 are in alphabetical order based on the state that the data is for.
+```{r}
+states_df <-
+bind_cols(df2, df1)
+          
+```
+
+
 4. Use a join function to combine the mortality data set (`all_df`) __with__ D.C. with the states data set from `states_df`. For this exercise, keep the row with Washington D.C., having it take on `NA` values for any variable not observed in the states data.
+```{r}
+left_join(states_df, mortality_df, by = c("value"= "state") )
+```
+
 
 5. Repeat Exercise 4, but now drop Washington D.C. in your merging process. Practice doing this __with a join function__ (as opposed to `slice`-ing or `filter`-ing it out explicitly).
+```{r}
+semi_join(states_df,mortality_df, by = c("value" = "state") )
+```
+
 
 6. Use `semi_join()` to create a subset of `states_df` that are in the `NE` region. __Hint__: You will need to filter `all_df` first to contain only states in the `NE` region.
+```{r}
+mortality_df %>%
+  filter(region == "NE") %>%
+  semi_join(states_df,., by = c("value" = "state") )
+```
 
 7. Do the same thing as Exercise 6, but this time, use `anti_join()`. __Hint__: You'll need to filter `all_df` in a different way to achieve this.
+```{r}
+mortality_df %>%
+  filter(region != "NE") %>%
+  anti_join(states_df,., by = c("value" = "state") )
+  
+```
+
 
 8. Examine the following data sets (the first is `df1` and the second is `df2`) and then, without running any code, answer the following questions. (You can check your answer using code, but try it "by hand" first!)
 
@@ -283,15 +323,41 @@ df2 <- tibble(id = c("A", "C", "D", "E", "G", "H"), yvar = c(2, 1, 2, 1, 1, 4))
 ```
 
 a. How many rows would be in the data set from `left_join(df1, df2, by = c("id" = "id"))`?
-
+    - There should be 5 rows
+```{r}
+left_join(df1, df2, by = c("id" = "id"))
+```
+    
 
 b. How many rows would be in the data set from `left_join(df2, df1, by = c("id" = "id"))`?
+    - There should be 6 rows in this one too
+    
+```{r}
+left_join(df2, df1, by = c("id" = "id"))
+```
 
 c. How many rows would be in the data set from `full_join(df1, df2, by = c("id" = "id"))`?
+    - There would be 8 rows because these are being combined by id and there are 8 different ids
+```{r}
+full_join(df1, df2, by = c("id" = "id"))
+```
 
 d. How many rows would be in the data set from `inner_join(df1, df2, by = c("id" = "id"))`?
-
+    - there should be 3 rows because that is how many of the ids match between the two dataframes
+```{r}
+inner_join(df1, df2, by = c("id" = "id"))
+```
+    
 e. How many rows would be in the data set from `semi_join(df1, df2, by = c("id" = "id"))`?
-
+    - there should be three rows in this one too because the semi_join will return the matches in df1 that are also shown in df2
+```{r}
+semi_join(df1, df2, by = c("id" = "id"))
+```
+    
 f. How many rows would be in the data set from `anti_join(df1, df2, by = c("id" = "id"))`?
+    - this would return 2 rows because it will only report the values in df1 that do not have a match in df2. 
+    
+```{r}
+anti_join(df1, df2, by = c("id" = "id"))
+```
 

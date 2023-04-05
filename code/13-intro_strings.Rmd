@@ -37,6 +37,8 @@ The `str_sub` command extracts substrings from a string (that is, a sequence of 
 
 
 ```{r}
+rm(list = ls())
+
 library(stringr)
 fruits <- c("apple", "pineapple", "Pear", "orange", "peach", "banana")
 
@@ -44,6 +46,20 @@ fruits <- c("apple", "pineapple", "Pear", "orange", "peach", "banana")
 
 
 **Question 1** What are the characters in the first through third position of each string in fruits?
+```{r}
+# going to extract substring from each of these pieces
+str_sub(string = fruits,
+        start = 1, # location of the first character,
+        end = 3 # location of the third character
+)
+
+# negatives will allow you to skip characters as well
+str_sub(string = fruits,
+        start = 1, # location of the first character,
+        end = -2 # location of the third character
+)
+
+```
 
 
 The `str_detect` command checks to see if any instance of a pattern occurs in a string.
@@ -51,17 +67,27 @@ The `str_detect` command checks to see if any instance of a pattern occurs in a 
 
 ```{r}
 #any occurrence of 'p'?
+str_detect(string = fruits, 
+           pattern = "p")
 
 ```
 
 Note that pattern matching is case-sensitive.
+```{r}
+# initially it did not pattern match for p since the P in pear is uppercase, lets make things lowercase and try again
+
+fruits %>%
+  str_to_lower() %>%
+  str_detect(pattern = "p")
+```
 
 
 To locate the position of a pattern within a string, use `str_locate`:
 
 
 ```{r}
-
+str_locate(string = fruits,
+           pattern = "an")
 ```
 
 
@@ -72,7 +98,8 @@ To find all instances of "an" within each string:
 
 
 ```{r}
-
+str_locate_all(string = fruits,
+           "an")
 ```
 
 
@@ -84,7 +111,7 @@ The command `str_locate_all` returns a list.
 ```{r}
 out <- str_locate_all(fruits, "an")
 data.class(out)
-out[[6]]
+out[[6]] # this is the more useful way to work with a list 
 unlist(out)
 ```
 
@@ -98,7 +125,18 @@ Let's detect strings that begin with either "p" or "P". The metacharacter "^" is
 
 
 ```{r}
+fruits
 
+# use brackets to find all fruits that contain a lowercase and uppercase p
+str_detect(string = fruits,
+           pattern = "[pP]"
+             )
+
+
+# find fruits that start with p or P, the ^ on the outside of the brackets will do this
+str_detect(string = fruits,
+           pattern = "^[pP]"
+             )
 ```
 
 
@@ -107,6 +145,14 @@ Similarly, the metacharacter "$" is used to signify the end of a string.
 
 ```{r}
    #end in 'e'
+str_detect(string = fruits,
+           pattern = "[e]$"
+             )
+
+# ends in a vowel
+str_detect(string = fruits,
+           pattern = "[aeiou]$"
+             )
 ```
 
 
@@ -128,7 +174,11 @@ To detect the letter "a" followed by 0 or more occurrences of "p", type:
 
 
 ```{r}
+str_detect(string = fruits,
+           pattern = "ap*" # here the astrix attaches itself to the p
+             )
 
+# the astrix indicates zero or more p's after the a, since all of these values have a's in them the console reports TRUE for all of them
 ```
 
 
@@ -136,7 +186,9 @@ Compare this to
 
 
 ```{r}
-
+fruits
+str_detect(string = fruits,
+           pattern = "ap+")
 ```
 
 
@@ -147,7 +199,15 @@ Here is a more complex pattern:
 
 
 ```{r}
- 
+fruits
+str_detect(string = fruits,
+           pattern = "^a(.*)e$") # starts with a and ends with e
+
+str_detect(string = fruits,
+           pattern = "[^a](.*)e$") # the ^ inside of the brackets indicates anything but an a
+
+str_detect(string = fruits,
+           pattern = "^[^a](.*)e$") # if you put the ^ outside of the brackets, then you attach an anchor                                        to it
 ```
 
 
@@ -272,38 +332,50 @@ veggies <- c("carrot", "bean", "peas", "cabbage", "scallion", "asparagus")
 a. Find those strings that contain the pattern "ea".
 
 ```{r}
-
+veggies
+str_detect(string = veggies,
+           pattern = "ea")
 ```
 
 b. Find those strings that end in "s".
 
 ```{r}
-
+veggies
+str_detect(string = veggies,
+           pattern = "s$")
 ```
 
 
 c. Find those strings that contain at least two "a"'s.
 
 ```{r}
-
+veggies
+str_detect(string = veggies,
+           pattern = "a(.*)a")
 ```
 
 
 d. Find those strings that begin with any letter except "c".
 
 ```{r}
-
+veggies
+str_detect(string = veggies,
+           pattern = "^[^c]")
 ```
 
 
 e. Find the starting and ending position of the pattern "ca" in each string.
 
 ```{r}
-
+veggies
+str_locate(string = veggies,
+           pattern = "ca")
 ```
 
 
 2. The regular expression `"^[Ss](.*)(t+)(.+)(t+)"` matches "scuttlebutt", "Stetson", and "Scattter", but not "Scatter." Why?
+
+The regular expression is saying it's looking for a string that starts with "S" or "s", has zero or more characters of any value, has one or more t's, has one or more characters of anything, then has one or more t's.  In this case "scuttlebutt", "Stetson", and "Scattter" all have t's that are seperated by one or more characters.  "Scatter" does not so it would be flagged as false.
 
 
 ### Additional Exercises
@@ -312,13 +384,15 @@ The file oscars.tsv is a tab-delimited file containing information Oscar nominat
 
 ```{r}
 library(tidyverse)
+library(here)
+library(readr)
 ```
 
 1. Read in the data using the readr package.
 
 ```{r}
 #oscars <- read_tsv("data/oscars.tsv")
-oscars <- read_delim("data/oscars.tsv", delim = "\t")
+oscars <- read_delim(here("data", "oscars.tsv"), delim = "\t")
 
 # notice in Viewer that numerous rows are missing 
 # most columns
@@ -339,7 +413,11 @@ oscars <-
 2. What proportion of movies were dramas?
 
 ```{r}
-
+oscars %>%
+  # create a new variable to determine if a movie is a drama
+  mutate(
+    Drama = str_detect(GenreName, "[Dd]rama")
+  )
 ```
 
 3. How many movies have the word “the” at least once in their name?

@@ -1,0 +1,55 @@
+---
+title: "Project 5"
+output: html_notebook
+---
+
+Project 5
+
+```{r}
+# import the libraries that we will need
+library(tidyverse)
+library(here)
+library(readxl)
+```
+
+Now we will try to import the data
+```{r}
+
+majors <- read_excel(here("data", "Graduates by Major and Minor 2022.xlsx"), skip = 1, col_types = "text")
+```
+Here we are interested in constructing a graph on the number of majors by year for the math, CS, and stat departments at SLU.  To do this, we want to get rid of the information on the "As % of graduates" which happens at column 157 and past that. We also want to get rid of column 2 at this point because that is a blank column.
+
+```{r}
+# get rid of columns 2 and 157-the rest of them
+majors_tidy <-
+     majors %>%
+        select(-2) %>%
+          slice(-89,-92,-93,-91) %>%
+               filter(!is.na(...1)) %>%
+     rename("Majors" = "...1") %>%
+     
+     pivot_longer(cols = 2:199,
+                  names_to = "Year",
+                  values_to = "Grads") %>%
+     mutate(Grads = parse_integer(Grads),
+            Year = parse_number(Year)) %>%
+     filter(!is.na(Grads))
+                         
+```
+Ok, now that the data has been cleaned up, lets graph this to take a look at the trends in majors over time.
+```{r}
+cs_stat_math_majors <-
+        majors_tidy %>%
+        filter(Majors == "Computer Science" | Majors == "Mathematics" | Majors == "Statistics") %>%
+        filter(Grads > 0 )
+
+
+cs_stat_math_majors %>%
+        ggplot(aes(x = Year, y = Grads, color = Majors))+
+        geom_point()+
+        geom_line() +
+        labs(x = "Year", y = "Number of Majors") +
+        theme_bw()
+```
+
+

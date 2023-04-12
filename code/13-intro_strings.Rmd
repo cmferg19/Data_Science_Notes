@@ -386,6 +386,7 @@ The file oscars.tsv is a tab-delimited file containing information Oscar nominat
 library(tidyverse)
 library(here)
 library(readr)
+library(stringr)
 ```
 
 1. Read in the data using the readr package.
@@ -417,36 +418,84 @@ oscars %>%
   # create a new variable to determine if a movie is a drama
   mutate(
     Drama = str_detect(GenreName, "[Dd]rama")
+  ) %>%
+  summarise(
+      prop_drama = mean(Drama, na.rm = TRUE)
   )
 ```
 
 3. How many movies have the word “the” at least once in their name?
 
 ```{r}
-
+oscars %>%
+  mutate(
+    the = str_detect(FilmName, "[Tt]he+(?= )") # you can also do \\b[Tt]he\\b
+  ) %>%
+  summarise(
+    prop_the = sum(the)
+  )
 ```
 
 4. How many characters is the longest movie title?
 ```{r}
-
+oscars %>%
+  mutate(
+    title_length = str_length(FilmName)
+  ) %>%
+  
+  slice_max(title_length)
+  
 ```
 
 5. Replace USA with United States in the appropriate movies CountryName.
 
 ```{r}
-
+oscars %>%
+  mutate(
+    CountryName = str_replace(oscars$CountryName, "USA", "United States"))
 ```
 
 
 6. Create a new variable indicating whether or not a movie was a Romance. (Notice that there are similar pre-existing variables for Drama and Biography.)
 
 ```{r}
-
+oscars <-
+  oscars %>%
+  mutate(
+    Genre_Romance = 
+      if_else(
+      str_detect(oscars$GenreName, "\\bRomance\\b"), 1,0 #if it is true, assign it a 1, if false, assign 0
+  )
+  )
 ```
 
 7. Make a table counting how often each Genre appears.
 ```{r}
+oscars %>%
+  summarise(
+    Drama = sum(Genre_Drama),
+    Biography = sum(Genre_Bio),
+    Romance = sum(Genre_Romance)
+  )
 
+# long way and you end up missing some of the genres
+oscars %>%
+  summarise(
+    Drama = sum(str_detect(oscars$GenreName, "\\bDrama\\b")),
+    Biography = sum(str_detect(oscars$GenreName, "\\bBiography\\b")),
+    Action = sum(str_detect(oscars$GenreName, "\\bAction\\b")),
+    Romance = sum(str_detect(oscars$GenreName, "\\bRomance\\b")),
+    History = sum(str_detect(oscars$GenreName, "\\bHistory\\b")),
+    Crime = sum(str_detect(oscars$GenreName, "\\bCrime\\b")),
+    War = sum(str_detect(oscars$GenreName, "\\bWar\\b")),
+    Mystery = sum(str_detect(oscars$GenreName, "\\bMystery\\b"))
+  )
+
+# separates all of the genres and allows you to get everything without missing any of the data
+oscars%>%
+  separate_rows(GenreName, sep = ", ") %>%
+  group_by(GenreName) %>%
+  summarise(n_movies = n())
 ```
 
 

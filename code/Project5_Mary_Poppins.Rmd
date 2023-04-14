@@ -1,0 +1,52 @@
+---
+title: "Project 5 (the real one)"
+output: html_notebook
+---
+
+# Overview
+
+For this project, I will be scraping data from the iMBd website to bring in different data on movie ratings.
+```{r}
+# clean up the workspace
+rm(list = ls())
+
+# import the libraries
+library(tidyverse)
+```
+
+# Webscraping
+
+```{r, results = "hide", appendix = TRUE}
+url <- "https://www.imdb.com/title/tt0058331/ratings/?ref_=tt_ov_rt"
+h <- read_html(url)
+tab <- h %>% html_nodes("table")
+tab
+
+
+objs <- tab %>% html_table()
+users <- objs[[1]]
+demographics <- objs[[2]]
+```
+
+```{r}
+# save the tables
+readr::write_csv(x = demographics, file = "marypoppins_imbd_demographics.csv")
+
+```
+
+# Cleaning up the data
+Now that the data has been imported, we need to clean it up:
+```{r}
+demographics_tidy <-
+     demographics %>%
+     rename(., "Demographic" = 1) %>%
+     pivot_longer(cols = c(2:6),
+                  names_to = "Age_range",
+                  values_to = "Rating") %>%
+     mutate(Rating = str_squish(Rating)) %>%
+     separate(col = "Rating",
+              sep = " ",
+              into = c("Rating", "Number_of_Votes"))
+     
+```
+

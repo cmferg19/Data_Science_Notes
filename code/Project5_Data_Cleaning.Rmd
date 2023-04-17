@@ -1,0 +1,74 @@
+---
+title: "Project 5 - Cleaning data"
+output: html_notebook
+---
+
+# Overview:
+In this project, we are playing around with data on the demographics for different movies.  For this project, I chose movies with Ben Stiller in them.  The three movies are "Dodgeball", "The Secret Life of Walter Mitty", and "A Night at the Museum".
+
+```{r}
+# clear the environment and import the data
+rm(list = ls())
+library(tidyverse)
+library(here)
+
+waltermitty <- read_csv(here("data", "waltermitty_imbddemographics.csv"))
+museum <- read_csv(here("data","nightatmuseum_imbddemographics.csv"))
+dodgeball <- read_csv(here("data","dodgeball_imbddemographics.csv"))
+
+```
+
+# Cleaning up the data
+Now that the data has been imported, we need to clean it up. To do this, I will start with the demographics data from "The Secret Life of Walter Mitty"
+
+```{r}
+waltermitty_tidy <-
+     waltermitty %>%
+     rename(., "Demographic" = 1) %>%
+     pivot_longer(cols = c(2:6),
+                  names_to = "Age_range",
+                  values_to = "Rating") %>%
+     mutate(Rating = str_squish(Rating)) %>%
+     separate(col = "Rating",
+              sep = " ",
+              into = c("Rating", "Number_of_Votes"))
+     
+```
+
+```{r}
+museum_tidy <-
+     museum %>%
+     rename(., "Demographic" = 1) %>%
+     pivot_longer(cols = c(2:6),
+                  names_to = "Age_range",
+                  values_to = "Rating") %>%
+     mutate(Rating = str_squish(Rating)) %>%
+     separate(col = "Rating",
+              sep = " ",
+              into = c("Rating", "Number_of_Votes"))
+     
+```
+
+```{r}
+dodgeball_tidy <-
+     dodgeball %>%
+     rename(., "Demographic" = 1) %>%
+     pivot_longer(cols = c(2:6),
+                  names_to = "Age_range",
+                  values_to = "Rating") %>%
+     mutate(Rating = str_squish(Rating)) %>%
+     separate(col = "Rating",
+              sep = " ",
+              into = c("Rating", "Number_of_Votes"))
+     
+```
+
+# Analysing the data
+Now that the data is in a clean format, I will analyse the data to extract any trends and/or relationships between the movies.
+
+```{r}
+# graphing the ratings by demographic
+waltermitty_tidy %>%
+     ggplot(aes(x=Rating, fill = Demographic)) +
+```
+

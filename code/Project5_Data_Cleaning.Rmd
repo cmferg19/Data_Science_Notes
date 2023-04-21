@@ -63,12 +63,62 @@ dodgeball_tidy <-
      
 ```
 
+Join all of the movies together:
+```{r}
+movies <- bind_rows(museum_tidy,
+                   dodgeball_tidy,
+                   waltermitty_tidy,
+                   .id = "Movie")
+
+# convert the Rating and number of votes values to numbers
+movies <- movies %>%
+        mutate( 
+                Rating = parse_number(Rating),
+                Number_of_Votes = parse_number(Number_of_Votes),
+                Demographic = as.factor(Demographic),
+                Movie = as.factor(Movie),
+                Age_range = as.factor(Age_range),
+                Movie = fct_recode(Movie, "The Secret Life of Walter Mitty"= "3", "Dodgeball" = "2", "Night at the Museum" = "1")
+                )
+       
+            
+```
+
+
 # Analysing the data
 Now that the data is in a clean format, I will analyse the data to extract any trends and/or relationships between the movies.
 
 ```{r}
 # graphing the ratings by demographic
-waltermitty_tidy %>%
-     ggplot(aes(x=Rating, fill = Demographic)) +
+movies %>%
+     ggplot(aes(x= Movie, y =Rating, fill = Demographic)) +
+        geom_boxplot()+
+        theme_bw() +
+        labs(y = "IMBd Rating")
+        
+        
 ```
+
+```{r}
+movies %>%
+        ggplot(aes(x = Demographic, y = Rating, fill = Movie)) +
+        geom_boxplot()+
+        labs(y = "IMBd Rating")+
+        theme_bw()
+```
+```{r}
+movies %>%
+        filter(Age_range != "All Ages") %>%
+        ggplot(aes(x = Age_range, y = Number_of_Votes)) +
+        geom_boxplot()+
+        geom_point(aes(group = Demographic, color = Demographic), position = "jitter")+
+        labs(x = "Age Range", y = "Number of Votes") +
+        theme_bw()
+```
+Outline for presentation:
+- Introduce the movies and their relationships to one another (all are movies with Ben Stiller)
+- Talk about IMBd and how the ratings work
+- Show number of votes by age range boxplt
+
+
 

@@ -111,14 +111,37 @@ movies %>%
         filter(Age_range != "All Ages") %>%
         ggplot(aes(x = Age_range, y = Number_of_Votes)) +
         geom_boxplot()+
-        geom_point(aes(group = Demographic, color = Demographic), position = "jitter")+
+        geom_point(aes(group = Movie, color = Movie), position = "jitter")+
         labs(x = "Age Range", y = "Number of Votes") +
         theme_bw()
+```
+
+```{r}
+movies %>%
+        filter(Age_range != "All Ages") %>%
+        ggplot(aes(x = Age_range, y = Rating)) +
+        geom_boxplot()+
+        geom_point(aes(group = Movie, color = Movie), position = "jitter")+
+        labs(x = "Age Range", y = "IMBd Rating") +
+        theme_bw()
+```
+
+
+```{r}
+movies %>%
+        filter(Age_range != "All Ages") %>%
+        ggplot(aes(x = Age_range, y = Rating)) +
+        geom_point(aes(group = Movie, color = Movie), position = "jitter")+
+        labs(x = "Age Range", y = "IMBd Rating") +
+        theme_bw()
+        
 ```
 Outline for presentation:
 - Introduce the movies and their relationships to one another (all are movies with Ben Stiller)
 - Talk about IMBd and how the ratings work
 - Show number of votes by age range boxplt
+- Show IMDd ratings by age range boxplt for the movies
+- show IMBd ratings by demographic boxplt 
 
 
 

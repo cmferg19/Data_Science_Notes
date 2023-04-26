@@ -57,6 +57,8 @@ The file `imdb_tv.sqlite` is an SQLite database that contains information on the
 1. Load the appropriate packages to connect to and analyze this database.
 
 ```{r}
+rm(list = ls())
+
 library(DBI) # we will then use the RSQLite package only for connecting to our db
 library(dplyr)
 library(dbplyr) # we will see how to use dplyr verbs to make some simple queries
@@ -209,7 +211,14 @@ a. Join the show information (show_info table) to the show ratings table.
 DBI:
 ```{r}
 query = 
+"
+SELECT * 
+FROM show_ratings
+LEFT JOIN show_info
+  ON show_ratings.parentTconst = show_info.parentTconst
+"
 
+# to relate the two data frames in SQL, you have to specify the (data_frame.column)
   
 res = dbSendQuery(imdb_db, query)
 show_df <- dbFetch(res)
@@ -220,21 +229,29 @@ dplyr
 dbListTables(imdb_db)
 
 # grab necessary tables (but don't collect them)
-show_ratings_db <- imdb_db %>% tbl("show_ratings")
+show_ratings_db <- imdb_db %>% tbl("show_ratings") # tbl function makes connection to database
 show_info_db <- imdb_db %>% tbl("show_info")
 
 
 show_df2 <-  left_join(x = show_ratings_db, 
                       y = show_info_db, 
                       by = "parentTconst") %>%
-  collect()
+  collect()  # the collect command will actually pull the joined data frame back into the environment. 
 ```
 
-b. Now all this information to the episode information!
+b. Now join all this information to the episode information!
 
 DBI
 ```{r}
 query = 
+"
+SELECT * 
+FROM episode_rating
+LEFT JOIN show_ratings 
+  ON episode_rating.parentTconst = show_ratings.parentTconst
+LEFT JOIN show_info
+  ON show_ratings.parentTconst = show_info.parentTconst
+"
 
 res = dbSendQuery(imdb_db, query)
 imdb_df <- dbFetch(res)
@@ -259,24 +276,36 @@ imdb_df2 <-  left_join(x = show_ratings_db,
 7. (Just for fun) For each show, calculate the difference between the show's overall rating and the mean of the averageRatings of each episode. Sort the result.
 
 ```{r}
+imbd_df_cleaned <- 
 imdb_df2 %>%
-  rename(episodeRating = averageRating.x,
-         showRating = averageRating.y,
-         episode_numVotes = numVotes.x,
-         show_numVotes = numVotes.y,
+  rename(episodeRating = averageRating.y,
+         showRating = averageRating.x,
+         episode_numVotes = numVotes.y,
+         show_numVotes = numVotes.x,
          ) %>%
 # you take over from here
+  group_by(Show_Name) %>%
+  summarize(
+    ratingDiff = mean(episodeRating, na.rm = TRUE) - mean(showRating, na.rm = TRUE)) %>%
+  tidyr::drop_na(ratingDiff) %>%
+  arrange(desc(ratingDiff))
 
 
 ```
 
 98. Save the joined tables as a csv file for later.
+```{r}
+readr::write_csv(imbd_df_cleaned,
+                 "imbd_popular_tvshows.csv"
+                 )
+```
 
 
 
 99. Always a good practice to use `dbDisconnect()` when you are finished to disconnect to the database.
 
 ```{r}
+# this command closes your connection to the data base
 dbDisconnect(imdb_db)
 ```
 
